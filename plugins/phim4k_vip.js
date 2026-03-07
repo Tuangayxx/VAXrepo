@@ -30,15 +30,12 @@ function getPrimaryCategories() {
         { name: 'Hành động', slug: 'Action & Adventure' },
         { name: 'Viễn tưởng', slug: 'Sci-Fi & Fantasy' },
         { name: 'Kinh dị', slug: 'Horror' },
-        { name: 'Hoạt hình', slug: 'Animation' },
-        { name: 'Hài hước', slug: 'Comedy' }
+        { name: 'Hoạt hình', slug: 'Animation' }
     ]);
 }
 
 function getFilterConfig() {
-    return JSON.stringify({
-        sort: [{ name: 'Mới cập nhật', value: 'update' }]
-    });
+    return JSON.stringify({ sort: [{ name: 'Mới cập nhật', value: 'update' }] });
 }
 
 // =============================================================================
@@ -62,6 +59,7 @@ function getUrlDetail(id) {
     return "https://stremio.phim4k.xyz/" + AUTH_TOKEN + "/meta/" + type + "/" + id + ".json";
 }
 
+// Hàm này sẽ gọi API Stream của Phim4K để lấy danh sách các link chất lượng
 function getUrlStream(id) {
     var type = id.indexOf('series') > -1 ? 'series' : 'movie';
     return "https://stremio.phim4k.xyz/" + AUTH_TOKEN + "/stream/" + type + "/" + id + ".json";
@@ -100,61 +98,51 @@ function parseListResponse(apiResponseJson) {
 
 function parseSearchResponse(apiResponseJson) { return parseListResponse(apiResponseJson); }
 
-function parseMovieDetail(apiResponseJson) {
+/**
+ * ĐÃ CẬP NHẬT: Hàm này giờ đây sẽ nhận dữ liệu từ API Stream của Phim4K
+ * và biến mỗi link thành một "tập phim" để người dùng chọn chất lượng.
+ */
+function parseMovieDetail(apiStreamResponseJson) {
     try {
-        var response = JSON.parse(apiResponseJson);
-        var meta = response.meta || {};
+        var response = JSON.parse(apiStreamResponseJson);
+        var streams = response.streams || [];
+        
+        // Tạo danh sách tập phim dựa trên các link stream (độ phân giải)
+        var episodes = streams.map(function (s, index) {
+            return {
+                id: s.url, // Dùng link proxy trực tiếp làm ID tập
+                name: s.title.split(' ').slice(0, 3).join(' '), // Lấy ngắn gọn tiêu đề chất lượng
+                slug: "link-" + index
+            };
+        });
+
         var servers = [{
-            name: "Phim4K VIP",
-            episodes: [{ id: meta.id, name: "Full", slug: meta.id }]
+            name: "Chất lượng Phim4K",
+            episodes: episodes
         }];
 
+        // Trả về cấu trúc để App hiển thị danh sách chọn link
         return JSON.stringify({
-            id: meta.id,
-            title: meta.name,
-            posterUrl: meta.poster || "",
-            backdropUrl: meta.background || "",
-            description: (meta.description || "").replace(/<[^>]*>/g, ""),
-            year: meta.year || 0,
-            rating: meta.imdbRating || 0,
-            quality: "4K",
             servers: servers,
-            category: (meta.genres || []).join(", "),
-            country: meta.country || "",
-            director: (meta.director || []).join(", "),
-            casts: (meta.cast || []).join(", ")
+            quality: "Đa luồng",
+            lang: "Vietsub"
         });
     } catch (error) { return "null"; }
 }
 
-function parseDetailResponse(apiResponseJson) {
-    try {
-        var response = JSON.parse(apiResponseJson);
-        var streams = response.streams || [];
-        var streamUrl = (streams.length > 0) ? streams[0].url : "";
-
-        // Cấu hình Header để sửa lỗi Access Denied và lỗi không xem được phim
-        return JSON.stringify({
-            url: streamUrl,
-            headers: { 
-                "User-Agent": "Stremio/1.6.0",
-                "Referer": "https://phim4k.lol/",
-                "Origin": "https://phim4k.lol"
-            },
-            subtitles: []
-        });
-    } catch (error) { return "{}"; }
+function parseDetailResponse(selectedStreamUrl) {
+    // Vì id tập giờ chính là URL, ta trả về trực tiếp
+    return JSON.stringify({
+        url: selectedStreamUrl,
+        headers: { 
+            "User-Agent": "Stremio/1.6.0",
+            "Referer": "https://phim4k.lol/",
+            "Origin": "https://phim4k.lol"
+        },
+        subtitles: []
+    });
 }
 
-// Xử lý hiển thị ảnh với header phim4k.lol
 function getImageUrl(path) {
-    if (!path) return "";
-    // Trả về cấu trúc có header để app có thể load ảnh từ server api.phim4k.lol
-    return JSON.stringify({
-        url: path,
-        headers: {
-            "Referer": "https://phim4k.lol/",
-            "User-Agent": "Mozilla/5.0"
-        }
-    });
+    return path || ""; 
 }
