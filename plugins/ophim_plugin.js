@@ -215,6 +215,7 @@ function parseMovieDetail(apiResponseJson) {
         return JSON.stringify({
             id: movie.slug,
             title: movie.name,
+            originName: movie.origin_name || "",
             posterUrl: getImageUrl(movie.thumb_url),
             backdropUrl: getImageUrl(movie.poster_url),
             description: (movie.content || "").replace(/<[^>]*>/g, ""),
