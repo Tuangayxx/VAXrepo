@@ -311,7 +311,7 @@ function parseListResponse(html) {
                 var name = PluginUtils.cleanText(innerContent);
                 if (!name || name.length < 2) continue;
 
-                var slug = url.replace("https://missav123.com", "").replace("https://missav123.com/", "/");
+                var slug = url.replace("https://missav.ws", "").replace("https://missav.ws/", "/");
                 if (slug.indexOf("/") !== 0) slug = "/" + slug;
 
                 // Avoid duplicates
