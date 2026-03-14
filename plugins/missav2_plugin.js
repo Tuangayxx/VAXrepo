@@ -278,7 +278,7 @@ function parseListResponse(html) {
             // Filter flags/icons just in case
             if (img.indexOf('flag') !== -1 || img.indexOf('icon') !== -1) img = "";
 
-            var slug = url.replace("https://missav123.com", "").replace("https://missav123.com/", "/");
+            var slug = url.replace("https://missav.ws", "").replace("https://missav.ws/", "/");
             if (slug.indexOf("/") !== 0) slug = "/" + slug;
 
             if (!foundActresses[slug]) {
