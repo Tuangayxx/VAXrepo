@@ -14,7 +14,7 @@ function getManifest() {
         "type": "VIDEO",
         "layoutType": "HORIZONTAL",
         "subtitleCat": true,
-        "useWebView": false
+        "useWebView": true
     });
 }
 
