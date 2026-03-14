@@ -12,7 +12,9 @@ function getManifest() {
         "isEnabled": true,
         "isAdult": true,
         "type": "VIDEO",
-        "layoutType": "HORIZONTAL"
+        "layoutType": "HORIZONTAL",
+        "subtitleCat": true,
+        "useWebView": true
     });
 }
 
