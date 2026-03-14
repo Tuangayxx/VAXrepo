@@ -13,7 +13,8 @@ function getManifest() {
         "isAdult": true,
         "type": "VIDEO",
         "layoutType": "HORIZONTAL",
-        "subtitleCat": true
+        "subtitleCat": true,
+        "useWebView": true
     });
 }
 
