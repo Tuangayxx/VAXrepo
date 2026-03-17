@@ -6,7 +6,7 @@ function getManifest() {
     return JSON.stringify({
         "id": "missav2",
         "name": "MissAV 2",
-        "version": "1.0.7",
+        "version": "1.0.8",
         "baseUrl": "https://missav.media",
         "iconUrl": "https://stpaulclinic.vn/vaapp/plugins/missav.ico",
         "isEnabled": true,
@@ -149,6 +149,20 @@ function getUrlYears() { return ""; } // Not supported
 // =============================================================================
 
 var PluginUtils = {
+    /**
+     * Strip prefix missav_media- (hoặc bất kỳ prefix dạng domain_) khỏi CSS class names.
+     * Ví dụ: class="missav_media-thumbnail missav_media-group" -> class="thumbnail group"
+     * Điều này đảm bảo parser hoạt động với cả HTML cũ và mới.
+     */
+    normalizeHtml: function (html) {
+        if (!html) return "";
+        // Strip missav_media- prefix trong class attributes
+        // Pattern: tìm class="..." rồi strip prefix bên trong
+        return html.replace(/class="([^"]*)"/g, function (fullMatch, classValue) {
+            var normalized = classValue.replace(/missav_media-/g, '');
+            return 'class="' + normalized + '"';
+        });
+    },
     cleanText: function (text) {
         if (!text) return "";
         return text.replace(/<[^>]*>/g, "")
@@ -177,6 +191,8 @@ var PluginUtils = {
 };
 
 function parseListResponse(html) {
+    // Normalize HTML: strip missav_media- prefix từ CSS class
+    html = PluginUtils.normalizeHtml(html);
     var movies = [];
 
     // SPECIAL CASE: Search page uses Alpine.js + Recombee API (dynamic loading)
@@ -509,6 +525,8 @@ function parseSearchResponse(html) {
 }
 
 function parseMovieDetail(html) {
+    // Normalize HTML: strip missav_media- prefix từ CSS class
+    html = PluginUtils.normalizeHtml(html);
     try {
         // Helper to extract relative slug from full URL
         var getSlug = function (url) {
@@ -715,6 +733,8 @@ function parseDetailResponse(html) {
 }
 
 function parseCategoriesResponse(html) {
+    // Normalize HTML: strip missav_media- prefix từ CSS class
+    html = PluginUtils.normalizeHtml(html);
     var categories = [];
 
     // Add "All Genres" as the first item
