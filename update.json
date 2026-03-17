@@ -1,7 +1,7 @@
 {
-    "latestVersionCode": 29,
-    "latestVersionName": "1.2.9",
-    "releaseNotes": "- Fix các lỗi còn tồn đọng\n- Fix xoay màn dọc bị ẩn nút\n- Thêm chọn giao diện TV thủ công trong cài đặt",
+    "latestVersionCode": 30,
+    "latestVersionName": "1.3.0",
+    "releaseNotes": "- Tối ưu và fix một số lỗi\n- Thêm chọn giao diện TV thủ công trong cài đặt",
     "downloadUrl": "https://raw.githubusercontent.com/youngbi/repo/main/app-release.apk"
 
 }
