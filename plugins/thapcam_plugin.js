@@ -199,21 +199,30 @@ function parseSearchResponse(apiResponseJson) {
 
 function parseMovieDetail(apiResponseJson, slug) {
     try {
-        var data;
-        // Kiểm tra xem apiResponseJson có phải là kết quả từ httpbin không
-        if (apiResponseJson.indexOf("httpbin.org/anything/thapcam/") !== -1) {
+        var data = null;
+        var base64Data = "";
+
+        // 1. Thử lấy từ apiResponseJson (kết quả từ httpbin)
+        try {
             var bridgeData = JSON.parse(apiResponseJson);
-            var url = bridgeData.url;
-            var parts = url.split("/thapcam/");
-            var base64Data = parts[parts.length - 1];
-            data = JSON.parse(Base64.decode(base64Data));
-        } else {
-            // Dự phòng nếu app truyền slug trực tiếp (Trường hợp user đã sửa app sau này)
-            if (slug && slug.length > 50) {
-                data = JSON.parse(Base64.decode(slug));
-            } else {
-                return "null";
+            var url = bridgeData.url || "";
+            if (url.indexOf("/thapcam/") !== -1) {
+                var parts = url.split("/thapcam/");
+                base64Data = parts[parts.length - 1];
             }
+        } catch (e) {}
+
+        // 2. Nếu không thấy, thử lấy từ slug (đối số thứ 2)
+        if (!base64Data && slug && slug.indexOf("/thapcam/") !== -1) {
+            var parts = slug.split("/thapcam/");
+            base64Data = parts[parts.length - 1];
+        }
+
+        // 3. Giải mã dữ liệu
+        if (base64Data) {
+            data = JSON.parse(Base64.decode(base64Data));
+        } else if (slug && slug.length > 50) {
+            data = JSON.parse(Base64.decode(slug));
         }
 
         if (!data) return "null";
@@ -275,8 +284,28 @@ function parseMovieDetail(apiResponseJson, slug) {
 
 function parseDetailResponse(apiResponseJson, slug) {
     try {
-        // Slug ở đây là dữ liệu stream đã được mã hóa Base64 từ parseMovieDetail
-        var decoded = Base64.decode(slug);
+        var base64Data = "";
+
+        // 1. Thử lấy từ apiResponseJson
+        try {
+            var bridgeData = JSON.parse(apiResponseJson);
+            var url = bridgeData.url || "";
+            if (url.indexOf("/thapcam/") !== -1) {
+                var parts = url.split("/thapcam/");
+                base64Data = parts[parts.length - 1];
+            }
+        } catch (e) {}
+
+        // 2. Thử lấy từ slug (là apiUrl từ repository)
+        if (!base64Data && slug && slug.indexOf("/thapcam/") !== -1) {
+            var parts = slug.split("/thapcam/");
+            base64Data = parts[parts.length - 1];
+        }
+
+        // 3. Nếu vẫn không có, coi slug chính là base64 (trường hợp app gọi thẳng)
+        if (!base64Data) base64Data = slug;
+
+        var decoded = Base64.decode(base64Data);
         var streamInfo = JSON.parse(decoded);
         var headers = {};
         
@@ -286,7 +315,6 @@ function parseDetailResponse(apiResponseJson, slug) {
             });
         }
 
-        // Đảm bảo có User-Agent mặc định nếu không có trong headers
         if (!headers["User-Agent"]) headers["User-Agent"] = "Mozilla/5.0";
 
         return JSON.stringify({
@@ -295,7 +323,6 @@ function parseDetailResponse(apiResponseJson, slug) {
             subtitles: []
         });
     } catch (error) {
-        // Fallback nếu có lỗi hoặc slug là URL trực tiếp
         return JSON.stringify({
             url: slug,
             headers: { "User-Agent": "Mozilla/5.0" },
