@@ -88,7 +88,7 @@
         {
             "id": "thapcam",
             "name": "Thập Cẩm Fake",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "scriptUrl": "https://cdn.jsdelivr.net/gh/youngbi/repo@main/plugins/thapcam_plugin.js",
             "iconUrl": "https://tctv.pro/10cam-logo-app-light.jpg"
         },
