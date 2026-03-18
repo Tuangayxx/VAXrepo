@@ -6,12 +6,13 @@ function getManifest() {
     return JSON.stringify({
         "id": "clbpx",
         "name": "CLB Phim Xưa",
-        "version": "1.0.5",
+        "version": "1.0.6",
         "baseUrl": "https://clbphimxua.com",
         "iconUrl": "https://raw.githubusercontent.com/youngbi/repo/main/plugins/clbpx.ico",
         "isEnabled": true,
         "isAdult": false,
         "type": "MOVIE",
+        "playerType": "embed",
         "layoutType": "VERTICAL"
     });
 }

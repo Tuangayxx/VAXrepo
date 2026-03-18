@@ -6,7 +6,7 @@ function getManifest() {
     return JSON.stringify({
         "id": "avdbapi",
         "name": "AVDB JAV",
-        "version": "1.0.0",
+        "version": "1.0.2",
         "baseUrl": "https://avdbapi.com",
         "iconUrl": "https://avdbapi.com/favicon.ico",
         "isEnabled": true,
@@ -229,19 +229,11 @@ function parseMovieDetail(apiResponseJson) {
 
 function parseDetailResponse(embedHtml, pageUrl) {
     try {
-        // embedHtml = HTML từ upload18.org/play/index/xxx
-
-        // Tìm PLAYER_CONFIG.m3u8 = "/play/token_hash?hash=xxxx"
-        var m3u8Match = embedHtml.match(/m3u8:\s*["']([^"']+)["']/);
-
-        if (m3u8Match && m3u8Match[1]) {
-            var m3u8Path = m3u8Match[1];
-            // Trả về isEmbed = true để app tiếp tục fetch token_hash URL
-            // App sẽ gọi parseEmbedResponse với kết quả
+        // Nếu response là m3u8 content → trả pageUrl để ExoPlayer play trực tiếp
+        if (embedHtml.indexOf("#EXTM3U") !== -1 || embedHtml.indexOf("#EXT-X-") !== -1) {
             return JSON.stringify({
-                url: "https://upload18.org" + m3u8Path,
-                isEmbed: true,
-                embedRegex: "",
+                url: pageUrl || "",
+                isEmbed: false,
                 headers: {
                     "Referer": "https://upload18.org/",
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
@@ -250,21 +242,16 @@ function parseDetailResponse(embedHtml, pageUrl) {
             });
         }
 
-        // Nếu pageUrl là token_hash URL → response là m3u8 playlist → dùng trực tiếp
-        if (embedHtml.indexOf("#EXTM3U") !== -1 || embedHtml.indexOf("#EXT-X-") !== -1) {
-            // Đây đã là nội dung m3u8
-            // Lấy base URL từ segment đầu tiên
-            var segMatch = embedHtml.match(/(https?:\/\/[^\s]+\.m3u8[^\s]*)/);
-            if (!segMatch) {
-                segMatch = embedHtml.match(/(https?:\/\/[^\s]+)/);
-            }
-
-            // Trả URL gốc (pageUrl) vì đó chính là endpoint trả m3u8
+        // Nếu là HTML embed page → trả pageUrl cho WebView load trực tiếp
+        // WebView sẽ render JWPlayer bên trong, tự xử lý m3u8 + Cloudflare cookies
+        // KHÔNG trả isEmbed: true vì OkHttp fetch token_hash bị Cloudflare block
+        if (embedHtml.indexOf("PLAYER_CONFIG") !== -1 || embedHtml.indexOf("jwplayer") !== -1) {
             return JSON.stringify({
                 url: pageUrl || "",
+                isEmbed: false,
                 headers: {
                     "Referer": "https://upload18.org/",
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
                 },
                 subtitles: []
             });
@@ -275,12 +262,19 @@ function parseDetailResponse(embedHtml, pageUrl) {
         if (fallbackMatch) {
             return JSON.stringify({
                 url: fallbackMatch[1],
+                isEmbed: false,
                 headers: { "Referer": "https://upload18.org/" },
                 subtitles: []
             });
         }
 
-        return "{}";
+        // Fallback cuối: trả embed URL cho WebView
+        return JSON.stringify({
+            url: pageUrl || "",
+            isEmbed: false,
+            headers: {},
+            subtitles: []
+        });
     } catch (error) { return "{}"; }
 }
 
