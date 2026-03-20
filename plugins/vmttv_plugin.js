@@ -11,7 +11,8 @@ function getManifest() {
         "iconUrl": "https://raw.githubusercontent.com/vuminhthanh12/vuminhthanh12/refs/heads/main/Logo.png",
         "isEnabled": true,
         "type": "VIDEO",
-        "layoutType": "HORIZONTAL"
+        "layoutType": "HORIZONTAL",
+        "playerType": "exoplayer"
     });
 }
 
