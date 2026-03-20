@@ -1,6 +1,6 @@
 {
-    "latestVersionCode": 35,
-    "latestVersionName": "1.3.5",
-    "releaseNotes": "- Thêm quản lý nguồn phim trong cài đặt\n- Fix lỗi tìm kiếm trên TV\n- Fix các lỗi nhỏ khác",
+    "latestVersionCode": 36,
+    "latestVersionName": "1.3.6",
+    "releaseNotes": "- Hỗ trợ các nguồn plugin kênh TV\n- Thêm quản lý nguồn phim trong cài đặt\n- Fix lỗi tìm kiếm trên TV",
     "downloadUrl": "https://raw.githubusercontent.com/youngbi/repo/main/app-release.apk"
 }
