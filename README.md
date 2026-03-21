@@ -1,4 +1,10 @@
-# Hướng Dẫn Tự Build Nguồn Phim / Truyện Bằng Plugin JS (dành cho VAAPP) 🚀
+# Lưu ý: Đây là nguồn plugins để học tập và tham khảo của tôi
+⚠️Cảnh báo: Theo mặc định, ứng dụng này không cung cấp bất kỳ nguồn video nào; bạn cần cài đặt các tiện ích mở rộng để bổ sung chức năng cho ứng dụng.
+# Vui lòng không tạo các tiện ích mở rộng bất hợp pháp hoặc sử dụng bất kỳ tiện ích mở rộng nào chứa nội dung có bản quyền.
+# Lưu ý quan trọng về bản quyền:
+Các tiện ích mở rộng trong các nguồn không được VAX chính thức kiểm duyệt hoặc xác nhận; nếu bạn hoặc chủ sở hữu bản quyền khác phát hiện ra tiện ích mở rộng nào vi phạm bản quyền của mình, vui lòng cho tôi biết.
+
+# Hướng Dẫn Tự Build Nguồn 🚀
 
 VAAPP sử dụng một hệ thống Plugin linh hoạt bằng **JavaScript nguyên thuỷ (Vanilla JS)** cho phép bạn cào dữ liệu (scraping) bất kỳ một trang xem phim hay đọc truyện nào trên mạng đưa vào ứng dụng sử dụng.
 
@@ -92,4 +98,4 @@ function parseListResponse(html) {
 }
 ```
 
-Chúc bạn thành công với dự án chế nguồn của bản thân! Đừng quên đóng góp các tài nguyên của mình cho cộng đồng nha! 🌐
+Chúc bạn thành công!
