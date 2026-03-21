@@ -6,7 +6,7 @@ Các tiện ích mở rộng trong các nguồn không được VAX chính thứ
 
 # Hướng Dẫn Tự Build Nguồn 🚀
 
-VAAPP sử dụng một hệ thống Plugin linh hoạt bằng **JavaScript nguyên thuỷ (Vanilla JS)** cho phép bạn cào dữ liệu (scraping) bất kỳ một trang xem phim hay đọc truyện nào trên mạng đưa vào ứng dụng sử dụng.
+VAX sử dụng một hệ thống Plugin linh hoạt bằng **JavaScript nguyên thuỷ (Vanilla JS)** cho phép bạn cào dữ liệu (scraping) bất kỳ một trang xem phim hay đọc truyện nào trên mạng đưa vào ứng dụng sử dụng.
 
 Khi xây dựng xong một file `.js`, bạn chỉ việc lưu trữ nó ở bất cứ đâu (thường là GitHub Raw, Pastebin, Cloud...) và khai báo lại vào file `plugins.json`.
 
