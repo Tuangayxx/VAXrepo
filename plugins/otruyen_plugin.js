@@ -6,7 +6,7 @@ function getManifest() {
     return JSON.stringify({
         "id": "otruyen",
         "name": "OTruyen",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "baseUrl": "https://otruyenapi.com",
         "iconUrl": "https://otruyenapi.com/favicon.ico",
         "isEnabled": true,
@@ -92,12 +92,18 @@ function parseListResponse(apiResponseJson) {
         var pagination = data.params?.pagination || {};
 
         var mangas = items.map(function (item) {
+            // Lấy chapter mới nhất từ chaptersLatest
+            var latestChapter = "";
+            if (item.chaptersLatest && item.chaptersLatest.length > 0) {
+                latestChapter = item.chaptersLatest[0].chapter_name || "";
+            }
             return {
                 id: item.slug,
                 title: item.name,
                 posterUrl: getImageUrl(item.thumb_url),
                 backdropUrl: getImageUrl(item.thumb_url),
-                status: item.status || ""
+                status: item.status || "",
+                chapter_name: latestChapter
             };
         });
 
