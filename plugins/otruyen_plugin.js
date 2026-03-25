@@ -20,6 +20,15 @@ function getHomeSections() {
     ]);
 }
 
+function getPrimaryCategories() {
+    return JSON.stringify([
+        { name: 'Truyện Mới', slug: 'truyen-moi' },
+        { name: 'Đang Phát Hành', slug: 'dang-phat-hanh' },
+        { name: 'Hoàn Thành', slug: 'hoan-thanh' },
+        { name: 'Sắp Ra Mắt', slug: 'sap-ra-mat' }
+    ]);
+}
+
 function getFilterConfig() {
     return JSON.stringify({
         sort: [
