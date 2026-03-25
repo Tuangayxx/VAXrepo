@@ -6,7 +6,7 @@ function getManifest() {
     return JSON.stringify({
         "id": "otruyen",
         "name": "OTruyen",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "baseUrl": "https://otruyenapi.com",
         "iconUrl": "https://otruyenapi.com/favicon.ico",
         "isEnabled": true,
@@ -48,15 +48,22 @@ function getUrlList(slug, filtersJson) {
         var page = filters.page || 1;
         var baseUrl = "https://otruyenapi.com/v1/api";
 
+        // Danh sách các slug thuộc primary categories (dùng path danh-sach/)
+        var primarySlugs = ['truyen-moi', 'dang-phat-hanh', 'hoan-thanh', 'sap-ra-mat'];
+
         // Default: danh-sach/truyen-moi
         var finalPath = "/danh-sach/truyen-moi";
 
-        // Nếu có category filter
+        // Nếu có category filter (thể loại từ bộ lọc)
         if (filters.category) {
             finalPath = "/the-loai/" + filters.category;
-        } else if (slug && slug !== 'truyen-moi') {
-            // Nếu slug khác truyen-moi, dùng làm thể loại
-            finalPath = "/the-loai/" + slug;
+        } else if (slug) {
+            // Kiểm tra slug thuộc primary (danh-sach) hay thể loại (the-loai)
+            if (primarySlugs.indexOf(slug) !== -1) {
+                finalPath = "/danh-sach/" + slug;
+            } else {
+                finalPath = "/the-loai/" + slug;
+            }
         }
 
         var url = baseUrl + finalPath + "?page=" + page;
