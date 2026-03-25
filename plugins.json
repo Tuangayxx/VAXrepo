@@ -88,7 +88,7 @@
         {
             "id": "otruyen",
             "name": "OTruyen",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "scriptUrl": "https://raw.githubusercontent.com/youngbi/repo/main/plugins/otruyen_plugin.js",
             "iconUrl": "https://otruyenapi.com/favicon.ico"
         },
