@@ -111,7 +111,8 @@ function parseListResponse(apiResponseJson) {
             // Lấy chapter mới nhất từ chaptersLatest
             var latestChapter = "";
             if (item.chaptersLatest && item.chaptersLatest.length > 0) {
-                latestChapter = item.chaptersLatest[0].chapter_name || "";
+                var chapterNum = item.chaptersLatest[0].chapter_name || "";
+                latestChapter = chapterNum ? "Chap " + chapterNum : "";
             }
             return {
                 id: item.slug,
@@ -119,7 +120,7 @@ function parseListResponse(apiResponseJson) {
                 posterUrl: getImageUrl(item.thumb_url),
                 backdropUrl: getImageUrl(item.thumb_url),
                 status: item.status || "",
-                chapter_name: latestChapter
+                episode_current: latestChapter
             };
         });
 
