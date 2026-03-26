@@ -526,7 +526,7 @@ function parseSearchResponse(html) {
     return parseListResponse(html);
 }
 
-function parseMovieDetail(html) {
+function parseMovieDetail(html, pageUrl) {
     // Normalize HTML: strip missav_media- prefix từ CSS class
     html = PluginUtils.normalizeHtml(html);
     try {
@@ -690,7 +690,7 @@ function parseMovieDetail(html) {
         if (streamUrl) {
             // Dùng URL gốc thay vì m3u8 URL trực tiếp
             // Để PlayerViewModel gọi getStreamLink() → headers Referer được gắn
-            var episodeId = url || streamUrl;
+            var episodeId = pageUrl || streamUrl;
             servers.push({
                 name: "Stream",
                 episodes: [{
