@@ -726,10 +726,14 @@ function parseMovieDetail(html) {
 
         var servers = [];
         if (streamUrl) {
+            // IMPORTANT: Dùng URL gốc thay vì m3u8 URL trực tiếp
+            // Để PlayerViewModel gọi getStreamLink() → headers Referer được gắn
+            // surrit.com yêu cầu Referer header, nếu gọi trực tiếp sẽ bị 403
+            var episodeId = url || streamUrl;
             servers.push({
                 name: "Stream",
                 episodes: [{
-                    id: streamUrl,
+                    id: episodeId,
                     name: "Full",
                     slug: "full"
                 }]
