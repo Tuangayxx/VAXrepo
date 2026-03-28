@@ -7,7 +7,7 @@ function getManifest() {
         "id": "ophim",
         "name": "OPhim",
         "version": "1.0.4",
-        "baseUrl": "https://phimapi.com",
+        "baseUrl": "https://ophim1.com",
         "iconUrl": "https://stpaulclinic.vn/vaapp/plugins/ophim.ico",
         "isEnabled": true,
         "type": "MOVIE"
@@ -64,7 +64,7 @@ function getUrlList(slug, filtersJson) {
         var limit = filters.limit || 24; // Default limit
 
         // Logic ưu tiên: Năm > Danh sách (nhiều thể loại) > Thẻ loại đơn
-        var baseUrl = "https://phimapi.com/v1/api";
+        var baseUrl = "https://ophim1.com/v1/api";
         var finalPath = "";
 
         var mainLists = ['phim-le', 'phim-bo', 'hoat-hinh', 'tv-shows', 'phim-chieu-rap', 'phim-moi', 'sap-chieu'];
@@ -112,23 +112,23 @@ function getUrlList(slug, filtersJson) {
 
         return url;
     } catch (e) {
-        return "https://phimapi.com/v1/api/danh-sach/" + slug;
+        return "https://ophim1.com/v1/api/danh-sach/" + slug;
     }
 }
 
 function getUrlSearch(keyword, filtersJson) {
     var filters = JSON.parse(filtersJson || "{}");
     var page = filters.page || 1;
-    return "https://phimapi.com/v1/api/tim-kiem?keyword=" + encodeURIComponent(keyword) + "&page=" + page;
+    return "https://ophim1.com/v1/api/tim-kiem?keyword=" + encodeURIComponent(keyword) + "&page=" + page;
 }
 
 function getUrlDetail(slug) {
-    return "https://phimapi.com/v1/api/phim/" + slug;
+    return "https://ophim1.com/v1/api/phim/" + slug;
 }
 
-function getUrlCategories() { return "https://phimapi.com/v1/api/the-loai"; }
-function getUrlCountries() { return "https://phimapi.com/v1/api/quoc-gia"; }
-function getUrlYears() { return "https://phimapi.com/v1/api/nam-phat-hanh"; }
+function getUrlCategories() { return "https://ophim1.com/v1/api/the-loai"; }
+function getUrlCountries() { return "https://ophim1.com/v1/api/quoc-gia"; }
+function getUrlYears() { return "https://ophim1.com/v1/api/nam-phat-hanh"; }
 
 // =============================================================================
 // PARSERS
@@ -252,7 +252,7 @@ function parseDetailResponse(apiResponseJson) {
 
         return JSON.stringify({
             url: streamUrl,
-            headers: { "User-Agent": "Mozilla/5.0", "Referer": "https://phimapi.com" },
+            headers: { "User-Agent": "Mozilla/5.0", "Referer": "https://ophim1.com" },
             subtitles: []
         });
     } catch (error) { return "{}"; }
