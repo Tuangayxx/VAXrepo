@@ -13,8 +13,7 @@ function getManifest() {
         "isAdult": true,
         "type": "VIDEO",
         "layoutType": "HORIZONTAL",
-        "subtitleCat": true,
-        "imageReferer": "https://missav.media/"
+        "subtitleCat": true
     });
 }
 
