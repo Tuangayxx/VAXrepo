@@ -14,7 +14,7 @@ function getManifest() {
         "type": "VIDEO",
         "layoutType": "HORIZONTAL",
         "subtitleCat": true,
-        "imageReferer": "https://missav.ai/"
+        "imageReferer": "https://missav.media/"
     });
 }
 
