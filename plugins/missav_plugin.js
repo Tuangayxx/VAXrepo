@@ -6,14 +6,15 @@ function getManifest() {
     return JSON.stringify({
         "id": "missav",
         "name": "MissAV",
-        "version": "1.1.0",
+        "version": "1.1.1",
         "baseUrl": "https://missav.media",
         "iconUrl": "https://stpaulclinic.vn/vaapp/plugins/missav.ico",
         "isEnabled": true,
         "isAdult": true,
         "type": "VIDEO",
         "layoutType": "HORIZONTAL",
-        "subtitleCat": true
+        "subtitleCat": true,
+        "imageReferer": "https://missav.ai/"
     });
 }
 
