@@ -17,7 +17,10 @@ function getManifest() {
 
 function getHomeSections() {
     return JSON.stringify([
-        { slug: 'today', title: 'Hôm Nay', type: 'Horizontal', path: 'today' },
+        { slug: 'country-viet-nam', title: 'Việt Nam', type: 'Horizontal', path: 'country-viet-nam' },
+        { slug: 'country-trung-quoc', title: 'Trung Quốc', type: 'Horizontal', path: 'country-trung-quoc' },
+        { slug: 'country-nhat-ban', title: 'Nhật Bản', type: 'Horizontal', path: 'country-nhat-ban' },
+        { slug: 'country-my', title: 'Mỹ', type: 'Horizontal', path: 'country-my' },
         { slug: 'latest', title: 'Mới Nhất', type: 'Grid', path: 'latest' }
     ]);
 }
@@ -78,7 +81,7 @@ function getUrlList(slug, filtersJson) {
         } else if (slug.indexOf('country-') === 0) {
             finalPath = "/countries/" + slug.replace('country-', '') + "/movies";
         } else if (slug.indexOf('actor-') === 0) {
-            finalPath = "/actors/" + slug.replace('actor-', '') + "/movies";
+            return getUrlSearch(slug.replace('actor-', ''), filtersJson);
         } else {
             // Default list API
             finalPath = "/movies/latest";
