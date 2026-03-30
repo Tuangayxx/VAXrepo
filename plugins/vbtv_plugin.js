@@ -107,7 +107,7 @@ function parseListResponse(apiResponseJson) {
                     posterUrl: channel.image ? channel.image.url : "",
                     backdropUrl: channel.image ? channel.image.url : "",
                     year: 0,
-                    quality: "FullHD",
+                    quality: "LIVE",
                     episode_current: channel.labels && channel.labels.length > 0 ? channel.labels[0].text : "Live",
                     lang: channel.org_metadata ? (channel.org_metadata.league || "") : ""
                 });
@@ -181,7 +181,7 @@ function parseMovieDetail(apiResponseJson, apiUrl) {
             description: description,
             year: 0,
             rating: 0,
-            quality: "FullHD",
+            quality: "LIVE",
             servers: servers,
             episode_current: "Live",
             lang: "Việt",

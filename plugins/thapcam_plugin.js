@@ -171,7 +171,7 @@ function parseMovieDetail(apiResponseJson, apiUrl) {
             description: description,
             year: 0,
             rating: 0,
-            quality: "HD",
+            quality: "LIVE",
             servers: servers,
             episode_current: "Live",
             lang: "Việt",

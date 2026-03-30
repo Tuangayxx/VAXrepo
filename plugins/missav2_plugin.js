@@ -9,7 +9,7 @@ function getManifest() {
         "version": "1.1.1",
         "baseUrl": "https://missav123.com",
         "fallbackUrls": ["https://missav.media"],
-        "iconUrl": "https://stpaulclinic.vn/vaapp/plugins/missav.ico",
+        "iconUrl": "https://raw.githubusercontent.com/youngbi/repo/main/plugins/missav.ico",
         "isEnabled": true,
         "isAdult": true,
         "type": "VIDEO",
