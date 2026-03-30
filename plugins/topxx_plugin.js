@@ -17,10 +17,10 @@ function getManifest() {
 
 function getHomeSections() {
     return JSON.stringify([
-        { slug: 'viet-nam', title: 'Việt Nam', type: 'Horizontal', path: 'viet-nam' },
-        { slug: 'trung-quoc', title: 'Trung Quốc', type: 'Horizontal', path: 'trung-quoc' },
-        { slug: 'nhat-ban', title: 'Nhật Bản', type: 'Horizontal', path: 'nhat-ban' },
-        { slug: 'my', title: 'Mỹ', type: 'Horizontal', path: 'my' },
+        { slug: 'vn', title: 'Việt Nam', type: 'Horizontal', path: 'vn' },
+        { slug: 'cn', title: 'Trung Quốc', type: 'Horizontal', path: 'cn' },
+        { slug: 'jp', title: 'Nhật Bản', type: 'Horizontal', path: 'jp' },
+        { slug: 'us', title: 'Mỹ', type: 'Horizontal', path: 'us' },
         { slug: 'latest', title: 'Mới Nhất', type: 'Grid', path: 'latest' }
     ]);
 }
@@ -76,6 +76,8 @@ function getUrlList(slug, filtersJson) {
             finalPath = "/movies/latest";
         } else if (slug === 'actors') {
             finalPath = "/actors";
+        } else if (['vn', 'cn', 'jp', 'us'].indexOf(slug) !== -1) {
+            finalPath = "/countries/" + slug + "/movies";
         } else if (slug.indexOf('genre-') === 0) {
             finalPath = "/genres/" + slug.replace('genre-', '') + "/movies";
         } else if (slug.indexOf('country-') === 0) {
@@ -253,7 +255,6 @@ function parseMovieDetail(apiResponseJson) {
             movie.sources.forEach(function (src, index) {
                 var link = src.link;
                 // Convert embed to m3u8
-                // https://embed.streamxx.net/player/4YUtFfOLLr -> https://embed.streamxx.net/stream/4YUtFfOLLr/main.m3u8
                 if (src.type === 'embed' && link && link.indexOf('/player/') > -1) {
                     var id = link.split('/player/')[1];
                     link = "https://embed.streamxx.net/stream/" + id + "/main.m3u8";
