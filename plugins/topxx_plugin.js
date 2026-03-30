@@ -17,10 +17,10 @@ function getManifest() {
 
 function getHomeSections() {
     return JSON.stringify([
-        { slug: 'country-viet-nam', title: 'Việt Nam', type: 'Horizontal', path: 'country-viet-nam' },
-        { slug: 'country-trung-quoc', title: 'Trung Quốc', type: 'Horizontal', path: 'country-trung-quoc' },
-        { slug: 'country-nhat-ban', title: 'Nhật Bản', type: 'Horizontal', path: 'country-nhat-ban' },
-        { slug: 'country-my', title: 'Mỹ', type: 'Horizontal', path: 'country-my' },
+        { slug: 'viet-nam', title: 'Việt Nam', type: 'Horizontal', path: 'viet-nam' },
+        { slug: 'trung-quoc', title: 'Trung Quốc', type: 'Horizontal', path: 'trung-quoc' },
+        { slug: 'nhat-ban', title: 'Nhật Bản', type: 'Horizontal', path: 'nhat-ban' },
+        { slug: 'my', title: 'Mỹ', type: 'Horizontal', path: 'my' },
         { slug: 'latest', title: 'Mới Nhất', type: 'Grid', path: 'latest' }
     ]);
 }
@@ -83,8 +83,7 @@ function getUrlList(slug, filtersJson) {
         } else if (slug.indexOf('actor-') === 0) {
             return getUrlSearch(slug.replace('actor-', ''), filtersJson);
         } else {
-            // Default list API
-            finalPath = "/movies/latest";
+            finalPath = "/genres/" + slug + "/movies";
         }
 
         var url = baseUrl + finalPath + "?page=" + page;
@@ -131,7 +130,7 @@ function parseListResponse(apiResponseJson) {
 
         var movies = items.map(function (item) {
             var isActorItem = item.hasOwnProperty('gender') || item.hasOwnProperty('avatar');
-            
+
             if (isActorItem) {
                 var name = getTransTranslation(item, 'name');
                 var code = item.code || getTransTranslation(item, 'slug');
@@ -140,7 +139,7 @@ function parseListResponse(apiResponseJson) {
                     if (match) code = match[1];
                 }
                 if (!code) code = (name || "").toLowerCase().replace(/\s+/g, '-');
-                
+
                 return {
                     id: "actor-" + code,
                     title: name || code,
