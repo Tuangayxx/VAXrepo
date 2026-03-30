@@ -86,6 +86,13 @@
             "iconUrl": "https://raw.githubusercontent.com/youngbi/repo/main/plugins/sextop1.webp"
         },
         {
+            "id": "topxx",
+            "name": "TopXX",
+            "version": "1.0.0",
+            "scriptUrl": "https://raw.githubusercontent.com/youngbi/repo/main/plugins/topxx_plugin.js",
+            "iconUrl": "https://topxx.vip/favicon.ico"
+        },
+        {
             "id": "otruyen",
             "name": "OTruyen",
             "version": "1.0.2",
