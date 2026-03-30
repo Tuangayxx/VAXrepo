@@ -93,7 +93,7 @@ function getUrlList(slug, filtersJson) {
     }
 
     if (slug.indexOf("/") === 0) {
-        return "https://vnsextop1.com + slug + (slug.indexOf("?") === -1 ? "?" : "&") + "page=" + page;
+        return "https://vnsextop1.com" + slug + (slug.indexOf("?") === -1 ? "?" : "&") + "page=" + page;
     }
 
     return "https://vnsextop1.com/the-loai/" + slug + "?page=" + page;
