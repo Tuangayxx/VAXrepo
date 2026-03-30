@@ -25,7 +25,8 @@ function getHomeSections() {
 function getPrimaryCategories() {
     return JSON.stringify([
         { name: 'Hôm nay', slug: 'today' },
-        { name: 'Mới nhất', slug: 'latest' }
+        { name: 'Mới nhất', slug: 'latest' },
+        { name: 'Diễn viên', slug: 'actors' }
     ]);
 }
 
@@ -70,10 +71,14 @@ function getUrlList(slug, filtersJson) {
             finalPath = "/movies/today";
         } else if (slug === 'latest') {
             finalPath = "/movies/latest";
+        } else if (slug === 'actors') {
+            finalPath = "/actors";
         } else if (slug.indexOf('genre-') === 0) {
             finalPath = "/genres/" + slug.replace('genre-', '') + "/movies";
         } else if (slug.indexOf('country-') === 0) {
             finalPath = "/countries/" + slug.replace('country-', '') + "/movies";
+        } else if (slug.indexOf('actor-') === 0) {
+            finalPath = "/actors/" + slug.replace('actor-', '') + "/movies";
         } else {
             // Default list API
             finalPath = "/movies/latest";
@@ -122,6 +127,29 @@ function parseListResponse(apiResponseJson) {
         }
 
         var movies = items.map(function (item) {
+            var isActorItem = item.hasOwnProperty('gender') || item.hasOwnProperty('avatar');
+            
+            if (isActorItem) {
+                var name = getTransTranslation(item, 'name');
+                var code = item.code || getTransTranslation(item, 'slug');
+                if (!code && item.avatar) {
+                    var match = item.avatar.match(/actors\/([^\/]+)-avatar/);
+                    if (match) code = match[1];
+                }
+                if (!code) code = (name || "").toLowerCase().replace(/\s+/g, '-');
+                
+                return {
+                    id: "actor-" + code,
+                    title: name || code,
+                    posterUrl: item.avatar || "",
+                    backdropUrl: item.avatar || "",
+                    year: 0,
+                    quality: "ACTRESS",
+                    episode_current: "",
+                    lang: ""
+                };
+            }
+
             var backdrop = "";
             if (item.images && item.images.length > 0) {
                 backdrop = item.images[0].path;
@@ -185,7 +213,8 @@ function parseMovieDetail(apiResponseJson) {
         var categoryList = [];
         if (movie.genres) {
             movie.genres.forEach(function (g) {
-                categoryList.push(getTransTranslation(g, 'name'));
+                var name = getTransTranslation(g, 'name');
+                if (name) categoryList.push("[" + name + "](genre-" + g.code + ")");
             });
         }
         var categories = categoryList.join(', ');
@@ -193,7 +222,8 @@ function parseMovieDetail(apiResponseJson) {
         var countryList = [];
         if (movie.countries) {
             movie.countries.forEach(function (c) {
-                countryList.push(getTransTranslation(c, 'name'));
+                var name = getTransTranslation(c, 'name');
+                if (name) countryList.push("[" + name + "](country-" + c.code + ")");
             });
         }
         var countries = countryList.join(', ');
@@ -201,7 +231,16 @@ function parseMovieDetail(apiResponseJson) {
         var castList = [];
         if (movie.actors) {
             movie.actors.forEach(function (a) {
-                castList.push(getTransTranslation(a, 'name'));
+                var name = getTransTranslation(a, 'name');
+                if (name) {
+                    var code = a.code || getTransTranslation(a, 'slug');
+                    if (!code && a.avatar) {
+                        var match = a.avatar.match(/actors\/([^\/]+)-avatar/);
+                        if (match) code = match[1];
+                    }
+                    if (!code) code = name.toLowerCase().replace(/\s+/g, '-');
+                    castList.push("[" + name + "](actor-" + code + ")");
+                }
             });
         }
         var casts = castList.join(', ');
