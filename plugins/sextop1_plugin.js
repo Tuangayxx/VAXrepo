@@ -7,7 +7,7 @@ function getManifest() {
         "id": "sextop1",
         "name": "Sextop1",
         "version": "1.1.5",
-        "baseUrl": "https://vnsextop1.com,
+        "baseUrl": "https://vnsextop1.com",
         "iconUrl": "https://raw.githubusercontent.com/youngbi/repo/main/plugins/sextop1.webp",
         "isEnabled": true,
         "isAdult": true,
