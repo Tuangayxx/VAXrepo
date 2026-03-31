@@ -10,6 +10,7 @@ function getManifest() {
         "baseUrl": "https://phimhdcs.com",
         "iconUrl": "https://phimhdcs.com/favicon.ico",
         "isEnabled": true,
+        "playerType": "exoplayer",
         "type": "MOVIE"
     });
 }
