@@ -12,6 +12,7 @@ function getManifest() {
         "isEnabled": true,
         "isAdult": true,
         "type": "VIDEO",
+        "playerType": "embed",
         "layoutType": "HORIZONTAL"
     });
 }
@@ -314,16 +315,15 @@ function parseDetailResponse(html, fallbackUrl) {
             || html.match(/data-source="([^"]+)"[^>]*class="[^"]*(?:set-player-source|player__cdn)[^"]*"/);
         var streamUrl = sourceMatch ? sourceMatch[1] : (fallbackUrl || "");
 
-        // Trả embed URL với GET (OkHttp sẽ tự follow 302 redirect)
-        // App sẽ capture URL cuối cùng sau redirect để biết CDN host thật
         return JSON.stringify({
             url: streamUrl.replace(/&amp;/g, "&"),
             headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Referer": "https://vnsextop1.com/"
             },
             subtitles: [],
             isEmbed: true,
-            embedRegex: ""
+            embedRegex: "['\"](https?:\\/\\/[^\\s'\"]+\\.m3u8[^'\"]*)['\"]"
         });
     } catch (e) {
         return JSON.stringify({ url: fallbackUrl || "", headers: {}, subtitles: [] });
@@ -352,84 +352,38 @@ function unpack(code) {
     return p;
 }
 
-/**
- * Multi-step parseEmbedResponse:
- *   Step 1: Nhận HTML từ embed GET (đã redirect 302) → trích videoId + host CDN → trả POST config (isEmbed=true)
- *   Step 2: Nhận JSON từ POST /videos/{id}/config → trích sources[0].file → trả m3u8 (isEmbed=false)
- */
-function parseEmbedResponse(html, resolvedUrl) {
+function parseEmbedResponse(html, fallbackUrl) {
     var finalUrl = "";
 
-    // === STEP 2: Nếu nội dung là JSON từ POST config ===
-    if (html && html.trim().charAt(0) === '{') {
-        try {
-            var data = JSON.parse(html);
-            if (data && data.sources && data.sources.length > 0) {
-                finalUrl = data.sources[0].file;
-            }
-            if (!finalUrl && data && data.data && data.data.length > 0) {
-                finalUrl = data.data[0].file;
-            }
-            if (!finalUrl && data && data.file) {
-                finalUrl = data.file;
-            }
-        } catch (e) {}
-
-        if (finalUrl) {
-            return JSON.stringify({
-                url: finalUrl.replace(/\\\//g, "/"),
-                headers: { "Referer": "https://vnsextop1.com/" },
-                subtitles: [],
-                isEmbed: false
-            });
-        }
-    }
-
-    // === STEP 1: HTML từ embed page (sau redirect 302) ===
-    // resolvedUrl = URL cuối sau redirect, VD: https://p1.spexliu.top/videos/{id}/play?...
-    var videoIdMatch = resolvedUrl.match(/videos\/([a-zA-Z0-9]+)/);
-    if (videoIdMatch) {
-        var videoId = videoIdMatch[1];
-        var hostMatch = resolvedUrl.match(/https?:\/\/[^\/]+/);
-        var host = hostMatch ? hostMatch[0] : "";
-
-        if (host) {
-            var configUrl = host + "/videos/" + videoId + "/config";
-            return JSON.stringify({
-                url: configUrl,
-                method: "POST",
-                body: "",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Referer": "https://vnsextop1.com/"
-                },
-                subtitles: [],
-                isEmbed: true,
-                embedRegex: ""
-            });
-        }
-    }
-
-    // === FALLBACK: Tìm m3u8 trực tiếp trong HTML ===
+    // First try to find eval code
     var evalMatch = html.match(/eval\(function\(p,a,c,k,e,d\).*?split\('\|'\)\)\)/);
     if (evalMatch) {
         var unpacked = unpack(evalMatch[0]);
         var m3u8Match = unpacked.match(/['"](https?:\/\/[^\s'"]+\.m3u8[^'"]*)['"]/);
-        if (m3u8Match) finalUrl = m3u8Match[1];
-    }
-    if (!finalUrl) {
-        var m3u8Match2 = html.match(/['"](https?:\/\/[^\s'"]+\.m3u8[^'"]*)['"]/);
-        if (m3u8Match2) finalUrl = m3u8Match2[1];
-    }
-    if (finalUrl) {
-        finalUrl = finalUrl.replace(/\\\//g, "/");
+        if (m3u8Match) {
+            finalUrl = m3u8Match[1];
+        }
     }
 
+    // Fallback if not eval or eval failed
+    if (!finalUrl) {
+        var m3u8Match = html.match(/['"](https?:\/\/[^\s'"]+\.m3u8[^'"]*)['"]/);
+        if (m3u8Match) {
+            finalUrl = m3u8Match[1];
+        }
+    }
+
+    // Fix escaped slashes
+    finalUrl = finalUrl.replace(/\\\//g, "/");
+
     return JSON.stringify({
-        url: (finalUrl || "").replace(/&amp;/g, "&"),
-        headers: { "Referer": "https://vnsextop1.com/" },
+        url: finalUrl.replace(/&amp;/g, "&"),
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Referer": fallbackUrl || "https://vnsextop1.com/"
+        },
         subtitles: [],
-        isEmbed: false
+        isEmbed: false // We already parsed it
     });
 }
 
