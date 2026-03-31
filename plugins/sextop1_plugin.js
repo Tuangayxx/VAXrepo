@@ -107,7 +107,7 @@ function getUrlSearch(keyword, filtersJson) {
 
 function getUrlDetail(slug) {
     if (slug.indexOf("http") === 0) return slug;
-    if (slug.indexOf("/") === 0) return "https://sextop1.page" + slug;
+    if (slug.indexOf("/") === 0) return "https://vnsextop1.com" + slug;
     return "https://vnsextop1.com/phim-sex/" + slug;
 }
 
@@ -314,6 +314,33 @@ function parseDetailResponse(html, fallbackUrl) {
         var sourceMatch = html.match(/class="[^"]*(?:set-player-source|player__cdn)[^"]*"[^>]*data-source="([^"]+)"/)
             || html.match(/data-source="([^"]+)"[^>]*class="[^"]*(?:set-player-source|player__cdn)[^"]*"/);
         var streamUrl = sourceMatch ? sourceMatch[1] : (fallbackUrl || "");
+        var refererUrl = "https://vnsextop1.com";
+
+        // Handle streamqq embed via POST config
+        var matchVideoId = streamUrl.match(/videos\/([a-zA-Z0-9]+)/);
+        if (matchVideoId) {
+            var videoId = matchVideoId[1];
+            var hostMatch = streamUrl.match(/https?:\/\/[^\/]+/);
+            var host = hostMatch ? hostMatch[0] : "https://e.streamqq.com";
+            var domainMatch = host.match(/https?:\/\/(.+)/);
+            var domain = domainMatch ? domainMatch[1] : "e.streamqq.com";
+            var configUrl = host + "/api/source/" + videoId;
+
+            return JSON.stringify({
+                url: configUrl,
+                method: "POST",
+                body: "r=" + encodeURIComponent(refererUrl) + "&d=" + encodeURIComponent(domain),
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Referer": refererUrl,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Origin": refererUrl
+                },
+                subtitles: [],
+                isEmbed: true,
+                embedRegex: ""
+            });
+        }
 
         return JSON.stringify({
             url: streamUrl.replace(/&amp;/g, "&"),
@@ -355,13 +382,27 @@ function unpack(code) {
 function parseEmbedResponse(html, fallbackUrl) {
     var finalUrl = "";
 
-    // First try to find eval code
-    var evalMatch = html.match(/eval\(function\(p,a,c,k,e,d\).*?split\('\|'\)\)\)/);
-    if (evalMatch) {
-        var unpacked = unpack(evalMatch[0]);
-        var m3u8Match = unpacked.match(/['"](https?:\/\/[^\s'"]+\.m3u8[^'"]*)['"]/);
-        if (m3u8Match) {
-            finalUrl = m3u8Match[1];
+    // 1. Try to parse JSON from config endpoint
+    if (html && html.trim().indexOf("{") === 0) {
+        try {
+            var data = JSON.parse(html);
+            if (data && data.success && data.data && data.data.length > 0) {
+                finalUrl = data.data[0].file;
+            } else if (data && data.file) { // fallback
+                finalUrl = data.file;
+            }
+        } catch (e) { }
+    }
+
+    if (!finalUrl) {
+        // First try to find eval code
+        var evalMatch = html.match(/eval\(function\(p,a,c,k,e,d\).*?split\('\|'\)\)\)/);
+        if (evalMatch) {
+            var unpacked = unpack(evalMatch[0]);
+            var m3u8Match = unpacked.match(/['"](https?:\/\/[^\s'"]+\.m3u8[^'"]*)['"]/);
+            if (m3u8Match) {
+                finalUrl = m3u8Match[1];
+            }
         }
     }
 
@@ -374,9 +415,12 @@ function parseEmbedResponse(html, fallbackUrl) {
     }
 
     // Fix escaped slashes
-    finalUrl = finalUrl.replace(/\\\//g, "/");
+    if (finalUrl) {
+        finalUrl = finalUrl.replace(/\\\//g, "/");
+    }
 
     return JSON.stringify({
+
         url: finalUrl.replace(/&amp;/g, "&"),
         headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
