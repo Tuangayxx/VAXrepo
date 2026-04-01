@@ -29,11 +29,11 @@ function getPrimaryCategories() {
 
 function getHomeSections() {
     return JSON.stringify([
-        { slug: 'recent', title: 'Video Mới Cập Nhật', type: 'Grid', path: '' },
         { slug: 'popular/today', title: 'Xem Nhiều Hôm Nay', type: 'Horizontal', path: '' },
         { slug: 'uncensored-jav', title: 'Jav Uncensored', type: 'Horizontal', path: '' },
         { slug: 'reducing-mosaic', title: 'Reducing Mosaic', type: 'Horizontal', path: '' },
-        { slug: 'jav-sub', title: 'Jav Sub', type: 'Horizontal', path: '' }
+        { slug: 'jav-sub', title: 'Jav Sub', type: 'Horizontal', path: '' },
+        { slug: 'recent', title: 'Video Mới Cập Nhật', type: 'Grid', path: '' }
     ]);
 }
 
@@ -297,11 +297,11 @@ function parseMovieDetail(html) {
 function parseDetailResponse(html, fallbackUrl) {
     try {
         var hostUrl = fallbackUrl || "";
-        
+
         // Extract the actual main-player iframe src (like mycloudz.cc) from the embed page
         var mainPlayerMatch = html.match(/<iframe[^>]*id=["']main-player["'][^>]*src=["']([^"']+)["']/i)
             || html.match(/<iframe[^>]*src=["']([^"']+)["'][^>]*id=["']main-player["']/i);
-            
+
         if (mainPlayerMatch) {
             hostUrl = mainPlayerMatch[1];
         }
