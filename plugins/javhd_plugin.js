@@ -6,9 +6,9 @@ function getManifest() {
     return JSON.stringify({
         "id": "javhd",
         "name": "JavHD",
-        "version": "1.0.1",
+        "version": "1.0.0",
         "baseUrl": "https://javhdz.today",
-        "iconUrl": "https://javhdz.today/vi/favicon.ico",
+        "iconUrl": "https://javhdz.today/favicon.ico",
         "isEnabled": true,
         "isAdult": true,
         "type": "VIDEO",
@@ -76,11 +76,11 @@ function getUrlList(slug, filtersJson) {
     var sortPath = (filters.sort && filters.sort !== 'recent') ? (filters.sort + '/') : '';
 
     if (filters.category) {
-        return "https://javhdz.today/vi/" + filters.category + "/" + sortPath + "?page=" + page;
+        return "https://javhdz.today/" + filters.category + "/" + sortPath + "?page=" + page;
     }
 
     if (!slug || slug === 'recent') {
-        return "https://javhdz.today/vi/recent/?page=" + page;
+        return "https://javhdz.today/recent/?page=" + page;
     }
 
     // Handles absolute slugs
@@ -89,33 +89,33 @@ function getUrlList(slug, filtersJson) {
     }
 
     if (slug.indexOf("/") === 0) {
-        return "https://javhdz.today/vi" + slug + (slug.indexOf("?") === -1 ? "?" : "&") + "page=" + page;
+        return "https://javhdz.today/" + slug + (slug.indexOf("?") === -1 ? "?" : "&") + "page=" + page;
     }
 
     // Combine slug and sort
     if (slug.indexOf('/') !== -1) {
         // e.g., 'popular/today'
-        return "https://javhdz.today/vi/" + slug + "/?page=" + page;
+        return "https://javhdz.today/" + slug + "/?page=" + page;
     }
 
-    return "https://javhdz.today/vi/" + slug + "/" + sortPath + "?page=" + page;
+    return "https://javhdz.today/" + slug + "/" + sortPath + "?page=" + page;
 }
 
 function getUrlSearch(keyword, filtersJson) {
     var filters = JSON.parse(filtersJson || "{}");
     var page = filters.page || 1;
-    return "https://javhdz.today/vi/search/video/?s=" + encodeURIComponent(keyword) + "&page=" + page;
+    return "https://javhdz.today/search/video/?s=" + encodeURIComponent(keyword) + "&page=" + page;
 }
 
 function getUrlDetail(slug) {
     if (slug.indexOf("http") === 0) return slug;
-    if (slug.indexOf("/") === 0) return "https://javhdz.today/vi" + slug;
-    return "https://javhdz.today/vi/" + slug;
+    if (slug.indexOf("/") === 0) return "https://javhdz.today" + slug;
+    return "https://javhdz.today/" + slug;
 }
 
-function getUrlCategories() { return "https://javhdz.today/vi/categories/"; }
-function getUrlCountries() { return "https://javhdz.today/vi/"; }
-function getUrlYears() { return "https://javhdz.today/vi/"; }
+function getUrlCategories() { return "https://javhdz.today/categories/"; }
+function getUrlCountries() { return "https://javhdz.today/"; }
+function getUrlYears() { return "https://javhdz.today/"; }
 
 // =============================================================================
 // PARSERS
@@ -305,7 +305,7 @@ function parseDetailResponse(html, fallbackUrl) {
             url: fallbackUrl || "",
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Referer": "https://javhdz.today/vi/"
+                "Referer": "https://javhdz.today/"
             },
             subtitles: [],
             isEmbed: true,
@@ -324,7 +324,7 @@ function parseEmbedResponse(html, fallbackUrl) {
         url: fallbackUrl || "",
         headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Referer": "https://javhdz.today/vi/"
+            "Referer": "https://javhdz.today/"
         },
         subtitles: [],
         isEmbed: false
