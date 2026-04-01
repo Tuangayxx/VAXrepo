@@ -245,17 +245,26 @@ function parseMovieDetail(html) {
 
         var servers = [];
 
-        var fallbackEmbedMatch = html.match(/id=["']main-player["'][^>]*?src=["']([^"']+)["']/i) || html.match(/src=["']([^"']+)["'][^>]*?id=["']main-player["']/i);
-
-        if (fallbackEmbedMatch) {
-            servers.push({
-                name: "Embed",
-                episodes: [{
-                    id: fallbackEmbedMatch[1],
-                    name: "Full",
-                    slug: "full"
-                }]
-            });
+        var mainPlayerStr = 'id="main-player"';
+        var idxMain = html.indexOf(mainPlayerStr);
+        if (idxMain !== -1) {
+            var srcStr = 'src="';
+            var idxSrc = html.indexOf(srcStr, idxMain);
+            if (idxSrc !== -1 && idxSrc - idxMain < 500) {
+                var startUrl = idxSrc + srcStr.length;
+                var endUrl = html.indexOf('"', startUrl);
+                if (endUrl !== -1) {
+                    var embedUrl = html.substring(startUrl, endUrl);
+                    servers.push({
+                        name: "Server 1",
+                        episodes: [{
+                            id: embedUrl,
+                            name: "Full",
+                            slug: "full"
+                        }]
+                    });
+                }
+            }
         }
 
         var thumbMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/);
@@ -297,13 +306,19 @@ function parseMovieDetail(html) {
 function parseDetailResponse(html, fallbackUrl) {
     try {
         var hostUrl = fallbackUrl || "";
-
-        // Extract the actual main-player iframe src (like mycloudz.cc) from the embed page
-        var mainPlayerMatch = html.match(/<iframe[^>]*id=["']main-player["'][^>]*src=["']([^"']+)["']/i)
-            || html.match(/<iframe[^>]*src=["']([^"']+)["'][^>]*id=["']main-player["']/i);
-
-        if (mainPlayerMatch) {
-            hostUrl = mainPlayerMatch[1];
+        
+        var mainPlayerStr = 'id="main-player"';
+        var idxMain = html.indexOf(mainPlayerStr);
+        if (idxMain !== -1) {
+            var srcStr = 'src="';
+            var idxSrc = html.indexOf(srcStr, idxMain);
+            if (idxSrc !== -1 && idxSrc - idxMain < 500) {
+                var startUrl = idxSrc + srcStr.length;
+                var endUrl = html.indexOf('"', startUrl);
+                if (endUrl !== -1) {
+                    hostUrl = html.substring(startUrl, endUrl);
+                }
+            }
         }
 
         return JSON.stringify({
