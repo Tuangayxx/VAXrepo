@@ -6,9 +6,9 @@ function getManifest() {
     return JSON.stringify({
         "id": "javhd",
         "name": "JavHD",
-        "version": "1.0.0",
-        "baseUrl": "https://javhd.today",
-        "iconUrl": "https://javhd.today/favicon.ico",
+        "version": "1.0.1",
+        "baseUrl": "https://javhdz.today",
+        "iconUrl": "https://javhdz.today/vi/favicon.ico",
         "isEnabled": true,
         "isAdult": true,
         "type": "VIDEO",
@@ -74,13 +74,13 @@ function getUrlList(slug, filtersJson) {
     var filters = JSON.parse(filtersJson || "{}");
     var page = filters.page || 1;
     var sortPath = (filters.sort && filters.sort !== 'recent') ? (filters.sort + '/') : '';
-    
+
     if (filters.category) {
-        return "https://javhd.today/" + filters.category + "/" + sortPath + "?page=" + page;
+        return "https://javhdz.today/vi/" + filters.category + "/" + sortPath + "?page=" + page;
     }
 
     if (!slug || slug === 'recent') {
-        return "https://javhd.today/recent/?page=" + page;
+        return "https://javhdz.today/vi/recent/?page=" + page;
     }
 
     // Handles absolute slugs
@@ -89,33 +89,33 @@ function getUrlList(slug, filtersJson) {
     }
 
     if (slug.indexOf("/") === 0) {
-        return "https://javhd.today" + slug + (slug.indexOf("?") === -1 ? "?" : "&") + "page=" + page;
+        return "https://javhdz.today/vi" + slug + (slug.indexOf("?") === -1 ? "?" : "&") + "page=" + page;
     }
 
     // Combine slug and sort
-    if(slug.indexOf('/') !== -1) {
+    if (slug.indexOf('/') !== -1) {
         // e.g., 'popular/today'
-        return "https://javhd.today/" + slug + "/?page=" + page;
+        return "https://javhdz.today/vi/" + slug + "/?page=" + page;
     }
 
-    return "https://javhd.today/" + slug + "/" + sortPath + "?page=" + page;
+    return "https://javhdz.today/vi/" + slug + "/" + sortPath + "?page=" + page;
 }
 
 function getUrlSearch(keyword, filtersJson) {
     var filters = JSON.parse(filtersJson || "{}");
     var page = filters.page || 1;
-    return "https://javhd.today/search/video/?s=" + encodeURIComponent(keyword) + "&page=" + page;
+    return "https://javhdz.today/vi/search/video/?s=" + encodeURIComponent(keyword) + "&page=" + page;
 }
 
 function getUrlDetail(slug) {
     if (slug.indexOf("http") === 0) return slug;
-    if (slug.indexOf("/") === 0) return "https://javhd.today" + slug;
-    return "https://javhd.today/" + slug;
+    if (slug.indexOf("/") === 0) return "https://javhdz.today/vi" + slug;
+    return "https://javhdz.today/vi/" + slug;
 }
 
-function getUrlCategories() { return "https://javhd.today/categories/"; }
-function getUrlCountries() { return "https://javhd.today/"; }
-function getUrlYears() { return "https://javhd.today/"; }
+function getUrlCategories() { return "https://javhdz.today/vi/categories/"; }
+function getUrlCountries() { return "https://javhdz.today/vi/"; }
+function getUrlYears() { return "https://javhdz.today/vi/"; }
 
 // =============================================================================
 // PARSERS
@@ -142,27 +142,27 @@ function parseListResponse(html) {
 
         var fullUrl = "";
         var title = "";
-        
+
         var aRegex = /<a([^>]+)>/g;
         var aMatch;
-        while((aMatch = aRegex.exec(itemHtml)) !== null) {
+        while ((aMatch = aRegex.exec(itemHtml)) !== null) {
             var attrs = aMatch[1];
-            if(attrs.indexOf('thumbnail') !== -1) {
+            if (attrs.indexOf('thumbnail') !== -1) {
                 var linkM = attrs.match(/href=["']([^"']+)["']/);
                 var titleM = attrs.match(/title=["']([^"']*)["']/);
-                if(linkM) fullUrl = linkM[1];
-                if(titleM) title = titleM[1];
+                if (linkM) fullUrl = linkM[1];
+                if (titleM) title = titleM[1];
                 break;
             }
         }
 
         var slug = fullUrl;
-        if(slug && slug.indexOf('/') === 0) slug = slug.substring(1);
+        if (slug && slug.indexOf('/') === 0) slug = slug.substring(1);
 
         var thumb = "";
         var imgRegex = /<img([^>]+)>/;
         var imgMatch = itemHtml.match(imgRegex);
-        if(imgMatch) {
+        if (imgMatch) {
             var imgAttrs = imgMatch[1];
             var srcM = imgAttrs.match(/src=["']([^"']+)["']/);
             var dataSrcM = imgAttrs.match(/data-src=["']([^"']+)["']/);
@@ -175,13 +175,13 @@ function parseListResponse(html) {
             // Extract labels
             var durationMatch = itemHtml.match(/<span[^>]*class=["']video-overlay badge transparent["'][^>]*>([\s\S]*?)<\/span>/);
             var duration = durationMatch ? PluginUtils.cleanText(durationMatch[1]) : "";
-            
+
             var codeMatch = itemHtml.match(/<span[^>]*class=["']video-overlay1 badge transparent["'][^>]*>([\s\S]*?)<\/span>/);
             var code = codeMatch ? PluginUtils.cleanText(codeMatch[1]) : "";
 
             var labels = [];
-            if(duration) labels.push(duration);
-            if(code) labels.push(code);
+            if (duration) labels.push(duration);
+            if (code) labels.push(code);
 
             var labelText = labels.join(" | ") || "HD";
 
@@ -244,37 +244,13 @@ function parseMovieDetail(html) {
         var description = descMatch ? PluginUtils.cleanText(descMatch[1]) : "";
 
         var servers = [];
-        var serverMap = {};
 
-        // Extract native Servers from .button_choice_server
-        var btnRegex = /class=["'][^"']*button_choice_server[^"']*["'][^>]*data-embed=["']([^"']+)["'][^>]*data-name=["']([^"']+)["']/g;
-        var btnMatch;
-        while ((btnMatch = btnRegex.exec(html)) !== null) {
-            var rawEmbed = btnMatch[1];
-            var sname = btnMatch[2].replace(/VIP|PRO|HOST|LIVE/g, '').trim();
-            if(rawEmbed) {
-                try {
-                    // Try to decode Base64
-                    // Note: Base64 decode ATob equivalent in simple JS function if atob is not global:
-                    var url = typeof atob !== 'undefined' ? atob(rawEmbed) : rawEmbed;
-                    
-                    if (!serverMap[url]) {
-                        serverMap[url] = true;
-                        servers.push({
-                            name: sname || "Server " + (servers.length + 1),
-                            episodes: [{
-                                id: url,
-                                name: "Full",
-                                slug: "full"
-                            }]
-                        });
-                    }
-                } catch(e) {}
-            }
-        }
+        var fallbackEmbedMatch = html.match(/<iframe[^>]*id=["']main-player["'][^>]*src=["']([^"']+)["']/i)
+            || html.match(/<iframe[^>]*src=["']([^"']+)["'][^>]*id=["']main-player["']/i)
+            || html.match(/id=["']embed-code["'][^>]*>[\s\S]*?src=["']([^"']+)["']/i)
+            || html.match(/<iframe[^>]*src=["']([^"']+)["']/i);
 
-        var fallbackEmbedMatch = html.match(/id=["']embed-code["'][^>]*>[\s\S]*?src=["']([^"']+)["']/);
-        if(servers.length === 0 && fallbackEmbedMatch) {
+        if (fallbackEmbedMatch) {
             servers.push({
                 name: "Embed",
                 episodes: [{
@@ -295,12 +271,12 @@ function parseMovieDetail(html) {
         var categoryRegex = /<a[^>]*href=["']\/([^"']+)["'][^>]*><i[^>]*class=["']fa fa-th-list["'][^>]*><\/i>([^<]+)<\/a>/g;
         var categoriesArr = [];
         var catMatch;
-        while((catMatch = categoryRegex.exec(html)) !== null) {
+        while ((catMatch = categoryRegex.exec(html)) !== null) {
             categoriesArr.push(PluginUtils.cleanText(catMatch[2]));
         }
 
         return JSON.stringify({
-            id: "", 
+            id: "",
             title: PluginUtils.cleanText(title),
             posterUrl: thumb,
             backdropUrl: thumb,
@@ -329,7 +305,7 @@ function parseDetailResponse(html, fallbackUrl) {
             url: fallbackUrl || "",
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Referer": "https://javhd.today/"
+                "Referer": "https://javhdz.today/vi/"
             },
             subtitles: [],
             isEmbed: true,
@@ -348,10 +324,10 @@ function parseEmbedResponse(html, fallbackUrl) {
         url: fallbackUrl || "",
         headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Referer": "https://javhd.today/"
+            "Referer": "https://javhdz.today/vi/"
         },
         subtitles: [],
-        isEmbed: false 
+        isEmbed: false
     });
 }
 
@@ -362,10 +338,10 @@ function parseCategoriesResponse(html) {
         var itemHtml = parts[i];
         var linkMatch = itemHtml.match(/href=["']\/([^"']+)[\/]?["']/);
         var nameMatch = itemHtml.match(/<div[^>]*class=["']category-title["'][^>]*>([\s\S]*?)<\/div>/);
-        
+
         if (linkMatch && nameMatch) {
             var slug = linkMatch[1];
-            if(slug.endsWith('/')) slug = slug.substring(0, slug.length - 1);
+            if (slug.endsWith('/')) slug = slug.substring(0, slug.length - 1);
             var name = PluginUtils.cleanText(nameMatch[1]);
             categories.push({
                 name: name,
