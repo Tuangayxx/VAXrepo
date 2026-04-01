@@ -140,20 +140,33 @@ function parseListResponse(html) {
     for (var i = 1; i < parts.length; i++) {
         var itemHtml = parts[i];
 
-        var titleMatch = itemHtml.match(/<a[^>]*class=["']thumbnail["'][^>]*title=["']([^"']*)["']/);
-        var title = titleMatch ? titleMatch[1].trim() : "";
-
-        var linkMatch = itemHtml.match(/<a[^>]*class=["']thumbnail["'][^>]*href=["']([^"']+)["']/);
-        var fullUrl = linkMatch ? linkMatch[1] : "";
+        var fullUrl = "";
+        var title = "";
+        
+        var aRegex = /<a([^>]+)>/g;
+        var aMatch;
+        while((aMatch = aRegex.exec(itemHtml)) !== null) {
+            var attrs = aMatch[1];
+            if(attrs.indexOf('thumbnail') !== -1) {
+                var linkM = attrs.match(/href=["']([^"']+)["']/);
+                var titleM = attrs.match(/title=["']([^"']*)["']/);
+                if(linkM) fullUrl = linkM[1];
+                if(titleM) title = titleM[1];
+                break;
+            }
+        }
 
         var slug = fullUrl;
         if(slug && slug.indexOf('/') === 0) slug = slug.substring(1);
 
-        var thumbMatch = itemHtml.match(/<img[^>]*src=["']([^"']+)["']/);
-        var thumb = thumbMatch ? thumbMatch[1] : "";
-        if(thumbMatch) {
-            var lazyMatch = itemHtml.match(/<img[^>]*data-src=["']([^"']+)["']/);
-            if(lazyMatch) thumb = lazyMatch[1];
+        var thumb = "";
+        var imgRegex = /<img([^>]+)>/;
+        var imgMatch = itemHtml.match(imgRegex);
+        if(imgMatch) {
+            var imgAttrs = imgMatch[1];
+            var srcM = imgAttrs.match(/src=["']([^"']+)["']/);
+            var dataSrcM = imgAttrs.match(/data-src=["']([^"']+)["']/);
+            thumb = (dataSrcM && dataSrcM[1]) ? dataSrcM[1] : (srcM ? srcM[1] : "");
         }
 
         if (slug) {
@@ -343,7 +356,24 @@ function parseEmbedResponse(html, fallbackUrl) {
 }
 
 function parseCategoriesResponse(html) {
-    return "[]";
+    var categories = [];
+    var parts = html.split(/<li[^>]*id=["']category-[^"']*["'][^>]*>/);
+    for (var i = 1; i < parts.length; i++) {
+        var itemHtml = parts[i];
+        var linkMatch = itemHtml.match(/href=["']\/([^"']+)[\/]?["']/);
+        var nameMatch = itemHtml.match(/<div[^>]*class=["']category-title["'][^>]*>([\s\S]*?)<\/div>/);
+        
+        if (linkMatch && nameMatch) {
+            var slug = linkMatch[1];
+            if(slug.endsWith('/')) slug = slug.substring(0, slug.length - 1);
+            var name = PluginUtils.cleanText(nameMatch[1]);
+            categories.push({
+                name: name,
+                slug: slug
+            });
+        }
+    }
+    return JSON.stringify(categories);
 }
 function parseCountriesResponse(html) { return "[]"; }
 function parseYearsResponse(html) { return "[]"; }
