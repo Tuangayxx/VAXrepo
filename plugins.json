@@ -95,7 +95,7 @@
         {
             "id": "javhd",
             "name": "JavHD",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "scriptUrl": "https://raw.githubusercontent.com/youngbi/repo/main/plugins/javhd_plugin.js",
             "iconUrl": "https://javhd.today/favicon.ico"
         },
