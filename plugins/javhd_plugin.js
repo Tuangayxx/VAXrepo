@@ -245,10 +245,7 @@ function parseMovieDetail(html) {
 
         var servers = [];
 
-        var fallbackEmbedMatch = html.match(/<iframe[^>]*id=["']main-player["'][^>]*src=["']([^"']+)["']/i)
-            || html.match(/<iframe[^>]*src=["']([^"']+)["'][^>]*id=["']main-player["']/i)
-            || html.match(/id=["']embed-code["'][^>]*>[\s\S]*?src=["']([^"']+)["']/i)
-            || html.match(/<iframe[^>]*src=["']([^"']+)["']/i);
+        var fallbackEmbedMatch = html.match(/id=["']main-player["'][^>]*?src=["']([^"']+)["']/i) || html.match(/src=["']([^"']+)["'][^>]*?id=["']main-player["']/i);
 
         if (fallbackEmbedMatch) {
             servers.push({
