@@ -6,7 +6,7 @@ function getManifest() {
     return JSON.stringify({
         "id": "javhd",
         "name": "JavHD",
-        "version": "1.0.0",
+        "version": "1.0.2",
         "baseUrl": "https://javhdz.today",
         "iconUrl": "https://javhdz.today/favicon.ico",
         "isEnabled": true,
@@ -299,10 +299,18 @@ function parseMovieDetail(html) {
 
 function parseDetailResponse(html, fallbackUrl) {
     try {
-        // If the URL from episode id was already the decoded iframe URL (like doodstream),
-        // we can just return it as embedUrl.
+        var hostUrl = fallbackUrl || "";
+        
+        // Extract the actual main-player iframe src (like mycloudz.cc) from the embed page
+        var mainPlayerMatch = html.match(/<iframe[^>]*id=["']main-player["'][^>]*src=["']([^"']+)["']/i)
+            || html.match(/<iframe[^>]*src=["']([^"']+)["'][^>]*id=["']main-player["']/i);
+            
+        if (mainPlayerMatch) {
+            hostUrl = mainPlayerMatch[1];
+        }
+
         return JSON.stringify({
-            url: fallbackUrl || "",
+            url: hostUrl,
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Referer": "https://javhdz.today/"
