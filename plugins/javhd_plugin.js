@@ -245,25 +245,88 @@ function parseMovieDetail(html) {
 
         var servers = [];
 
-        var mainPlayerStr = 'id="main-player"';
-        var idxMain = html.indexOf(mainPlayerStr);
-        if (idxMain !== -1) {
-            var srcStr = 'src="';
-            var idxSrc = html.indexOf(srcStr, idxMain);
-            if (idxSrc !== -1 && idxSrc - idxMain < 500) {
-                var startUrl = idxSrc + srcStr.length;
-                var endUrl = html.indexOf('"', startUrl);
-                if (endUrl !== -1) {
-                    var embedUrl = html.substring(startUrl, endUrl);
-                    servers.push({
-                        name: "Server 1",
-                        episodes: [{
-                            id: embedUrl,
-                            name: "Full",
-                            slug: "full"
-                        }]
-                    });
+        var serverRegex = /<button[^>]*class=["'][^"']*button_choice_server[^"']*["'][^>]*data-embed=["']([^"']+)["'][^>]*data-name=["']([^"']+)["']/gi;
+        var b64chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+        var serverMatch;
+        var foundServer = false;
+
+        while ((serverMatch = serverRegex.exec(html)) !== null) {
+            var b64url = serverMatch[1];
+            var serverName = serverMatch[2];
+            var decodedUrl = "";
+            try {
+                if (typeof atob === 'function') {
+                    decodedUrl = atob(b64url);
+                } else {
+                    var str = String(b64url).replace(/[=]+$/, '');
+                    if (str.length % 4 !== 1) {
+                        for (var bc = 0, bs, buffer, idx = 0; buffer = str.charAt(idx++); ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer, bc++ % 4) ? decodedUrl += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0) {
+                            buffer = b64chars.indexOf(buffer);
+                        }
+                    }
                 }
+            } catch (e) {}
+
+            if (decodedUrl) {
+                foundServer = true;
+                servers.push({
+                    name: serverName,
+                    episodes: [{
+                        id: decodedUrl,
+                        name: "Full",
+                        slug: "full"
+                    }]
+                });
+            }
+        }
+
+        // Fallback using the simple indexOf main-player
+        if (!foundServer) {
+            var mainPlayerStr = 'id="main-player"';
+            var idxMain = html.indexOf(mainPlayerStr);
+            if (idxMain !== -1) {
+                var srcStr = 'src="';
+                var idxSrc = html.indexOf(srcStr, idxMain);
+                if (idxSrc !== -1 && idxSrc - idxMain < 500) {
+                    var startUrl = idxSrc + srcStr.length;
+                    var endUrl = html.indexOf('"', startUrl);
+                    if (endUrl !== -1) {
+                        var embedUrl = html.substring(startUrl, endUrl);
+                        servers.push({
+                            name: "Embed Server",
+                            episodes: [{
+                                id: embedUrl,
+                                name: "Full",
+                                slug: "full"
+                            }]
+                        });
+                        foundServer = true;
+                    }
+                }
+            }
+        }
+
+        // Ultimate fallback: direct link extraction
+        if (!foundServer) {
+            var ultimateMatch = html.match(/src=["'](https?:\/\/[a-z0-9A-Z.-]+\/(v|e|embed)\/[^"']+)["']/i);
+            if (ultimateMatch) {
+                servers.push({
+                    name: "Default Embed",
+                    episodes: [{
+                        id: ultimateMatch[1],
+                        name: "Full",
+                        slug: "full"
+                    }]
+                });
+            } else {
+                servers.push({
+                    name: "Unknown",
+                    episodes: [{
+                        id: "",
+                        name: "Full",
+                        slug: "full"
+                    }]
+                });
             }
         }
 
