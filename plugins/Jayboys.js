@@ -11,7 +11,7 @@ function getManifest() {
         "iconUrl": "https://jgcdn.com/wp-content/uploads/2025/09/t4636.webp",
         "isEnabled": true,
         "isAdult": true,
-        "type": "VIDEO",
+        "type": "MOVIE",
         "playerType": "embed",
         "layoutType": "VERTICAL",
         "playerType": "exoplayer" // Kích hoạt ExoPlayer siêu mượt vì ta đã bóc được m3u8
