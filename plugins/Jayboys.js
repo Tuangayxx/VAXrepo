@@ -61,9 +61,7 @@ function getUrlSearch(keyword, filtersJson) {
 }
 
 function getUrlDetail(slug) {
-    // Trong chuẩn mới, vì ta lưu thẳng Full URL vào ID phim và ID tập phim,
-    // nên App sẽ gọi hàm này và truyền Full URL vào. Ta chỉ việc return chính nó để App fetch.
-    return slug; 
+    return "https://www.javboys.tv/" + slug + "/";
 }
 
 function getUrlCategories() { return ""; }
@@ -83,14 +81,19 @@ function parseListResponse(html) {
         
         var linkMatch = block.match(/href="([^"]+)"/);
         if (!linkMatch) continue; 
+        var fullUrl = linkMatch[1];
         
-        // Lưu Full URL vào ID để getUrlDetail nhận trực tiếp
-        var id = linkMatch[1]; 
+        // CỰC KỲ QUAN TRỌNG: Cắt bỏ domain để tạo ra ID/slug sạch cho App
+        var id = fullUrl.replace(/https?:\/\/(www\.)?javboys\.tv\//i, "");
+        if (id.endsWith('/')) {
+            id = id.slice(0, -1);
+        }
         
         var titleMatch = block.match(/<span class="title">([^<]+)<\/span>/) || block.match(/title="([^"]+)"/);
         var title = titleMatch ? titleMatch[1].trim() : "Không có tiêu đề";
 
-        var imgMatch = block.match(/<img[^>]+src="([^"]+)"/i);
+        // BẮT ẢNH THÔNG MINH: Ưu tiên data-src để xuyên thủng LazyLoad của Web
+        var imgMatch = block.match(/data-src="([^"]+)"/i) || block.match(/data-lazy-src="([^"]+)"/i) || block.match(/<img[^>]+src="([^"]+)"/i);
         var posterUrl = imgMatch ? imgMatch[1] : "";
 
         var timeMatch = block.match(/<span class="time-desc">([^<]+)<\/span>/i);
