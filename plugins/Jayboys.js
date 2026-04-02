@@ -122,6 +122,10 @@ function parseSearchResponse(html) {
 }
 
 // 2. Tách Thông tin Chi tiết và Server (Link Embed)
+// =============================================================================
+// PARSER CHI TIẾT VÀ LINK VIDEO (ĐÃ FIX LỖI "KHÔNG TÌM THẤY LINK")
+// =============================================================================
+
 function parseMovieDetail(html) {
     var titleMatch = html.match(/<h1 class="title">([^<]+)<\/h1>/);
     var title = titleMatch ? titleMatch[1].trim() : "Unknown Title";
@@ -129,22 +133,26 @@ function parseMovieDetail(html) {
     var imgMatch = html.match(/<meta property="og:image" content="([^"]+)"/);
     var posterUrl = imgMatch ? imgMatch[1] : "";
 
+    // Lấy URL hiện tại của phim để tái sử dụng
+    var currentUrlMatch = html.match(/<meta[^>]+property="og:url"[^>]+content="([^"]+)"/i);
+    var currentUrl = currentUrlMatch ? currentUrlMatch[1] : "";
+
     var servers = [];
     var episodes = [];
     
-    // Tìm tất cả các block player chứa data-src
+    // Tìm tất cả các block player
     var playerRegex = /<div[^>]+id="([^"]+)"[^>]+class="video-player[^"]*"[^>]+data-src="([^"]+)"/g;
     var match;
     var count = 1;
     
     while ((match = playerRegex.exec(html)) !== null) {
-        var playerId = match[1];
-        var linkEmbed = match[2];
+        var playerId = match[1]; // Ví dụ: player1
 
         episodes.push({
             "id": playerId,
             "name": "Server " + count,
-            "slug": linkEmbed // Lưu thẳng link embed vào slug
+            // CHIÊU TRÒ Ở ĐÂY: Gắn ID Server vào đuôi URL phim
+            "slug": currentUrl + "#" + playerId
         });
         count++;
     }
@@ -170,39 +178,37 @@ function parseMovieDetail(html) {
     });
 }
 
-// 3. Tách link Video cuối cùng để Play
 function parseDetailResponse(html, slug) {
-    // 1. VAAPP thường truyền link Embed vào tham số thứ 2 (slug), ta lấy luôn nếu có
-    var url = slug || ""; 
+    var url = "";
+    var playerId = "";
+    
+    // 1. Phân tích xem người dùng vừa bấm vào Server nào (Móc ID từ slug)
+    if (typeof slug === "string" && slug.indexOf("#") !== -1) {
+        playerId = slug.split("#")[1];
+    }
 
-    // 2. Ưu tiên tối thượng: Quét tìm link m3u8 ẩn trong mã nguồn Embed để phát bằng Native Player cho mượt
-    var m3u8Match = html.match(/(https:\/\/[^"']*\.m3u8[^"']*)/i);
-    if (m3u8Match) {
-        url = m3u8Match[1];
-    } 
-    // 3. Dự phòng 1: Nếu không có m3u8, quét tìm file mp4 trực tiếp
-    else {
-        var mp4Match = html.match(/(https:\/\/[^"']*\.mp4[^"']*)/i);
-        if (mp4Match) {
-            url = mp4Match[1];
+    // 2. Tìm đúng cái thẻ div của Server đó để lấy link Embed
+    if (playerId) {
+        var regex = new RegExp('<div[^>]+id="' + playerId + '"[^>]+class="video-player[^"]*"[^>]+data-src="([^"]+)"', 'i');
+        var match = html.match(regex);
+        if (match) {
+            url = match[1];
         }
     }
 
-    // 4. Dự phòng 2: Nếu App không truyền slug và không có file trực tiếp, móc lại link Embed từ thẻ meta của trang
+    // 3. Fallback an toàn: Nếu không tìm thấy ID, cứ lấy đại Server 1
     if (!url) {
-        var metaUrlMatch = html.match(/<meta[^>]+property="og:url"[^>]+content="([^"]+)"/i) 
-                        || html.match(/<link[^>]+rel="canonical"[^>]+href="([^"]+)"/i)
-                        || html.match(/<iframe[^>]+src="([^"]+)"/i);
-        if (metaUrlMatch) {
-            url = metaUrlMatch[1];
+        var fallbackMatch = html.match(/<div[^>]+class="video-player[^"]*"[^>]+data-src="([^"]+)"/i);
+        if (fallbackMatch) {
+            url = fallbackMatch[1];
         }
     }
 
-    // Trả về JSON chứa URL cuối cùng cho App
+    // Trả link Embed cho VAAPP tự động xử lý WebView
     return JSON.stringify({
         url: url,
         headers: {
-            "Referer": "https://www.javboys.tv/", // Fake Referer để bypass chống xem chùa
+            "Referer": "https://www.javboys.tv/",
             "Origin": "https://www.javboys.tv/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         },
