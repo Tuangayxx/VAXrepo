@@ -12,8 +12,7 @@ function getManifest() {
         "isEnabled": true,
         "isAdult": true,
         "type": "MOVIE",
-        "playerType": "embed",
-        "layoutType": "VERTICAL",
+        "layoutType": "HORIZONTAL",
         "playerType": "exoplayer" // Kích hoạt ExoPlayer siêu mượt vì ta đã bóc được m3u8
     });
 }
