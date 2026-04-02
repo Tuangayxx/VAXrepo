@@ -171,23 +171,39 @@ function parseMovieDetail(html) {
 }
 
 // 3. Tách link Video cuối cùng để Play
-function parseDetailResponse(html) {
-    var url = "";
+function parseDetailResponse(html, slug) {
+    // 1. VAAPP thường truyền link Embed vào tham số thứ 2 (slug), ta lấy luôn nếu có
+    var url = slug || ""; 
 
-    // App truyền link Embed vào thông qua biến slug, nên param 'html' lúc này chính là link Embed đó
-    if (html.indexOf("http") === 0 && html.indexOf("<html") === -1) {
-        url = html;
-    } else {
-        var iframeMatch = html.match(/<div[^>]+class="video-player[^"]*"[^>]+data-src="([^"]+)"/i);
-        if (iframeMatch) {
-            url = iframeMatch[1];
+    // 2. Ưu tiên tối thượng: Quét tìm link m3u8 ẩn trong mã nguồn Embed để phát bằng Native Player cho mượt
+    var m3u8Match = html.match(/(https:\/\/[^"']*\.m3u8[^"']*)/i);
+    if (m3u8Match) {
+        url = m3u8Match[1];
+    } 
+    // 3. Dự phòng 1: Nếu không có m3u8, quét tìm file mp4 trực tiếp
+    else {
+        var mp4Match = html.match(/(https:\/\/[^"']*\.mp4[^"']*)/i);
+        if (mp4Match) {
+            url = mp4Match[1];
         }
     }
 
+    // 4. Dự phòng 2: Nếu App không truyền slug và không có file trực tiếp, móc lại link Embed từ thẻ meta của trang
+    if (!url) {
+        var metaUrlMatch = html.match(/<meta[^>]+property="og:url"[^>]+content="([^"]+)"/i) 
+                        || html.match(/<link[^>]+rel="canonical"[^>]+href="([^"]+)"/i)
+                        || html.match(/<iframe[^>]+src="([^"]+)"/i);
+        if (metaUrlMatch) {
+            url = metaUrlMatch[1];
+        }
+    }
+
+    // Trả về JSON chứa URL cuối cùng cho App
     return JSON.stringify({
         url: url,
         headers: {
-            "Referer": "https://www.javboys.tv/", 
+            "Referer": "https://www.javboys.tv/", // Fake Referer để bypass chống xem chùa
+            "Origin": "https://www.javboys.tv/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         },
         subtitles: []
