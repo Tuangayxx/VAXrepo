@@ -10,7 +10,8 @@ function getManifest() {
         "iconUrl": "https://jgcdn.com/wp-content/uploads/2025/09/t4636.webp",
         "isEnabled": true,
         "isAdult": true,
-        "type": "MOVIE",
+        "type": "VIDEO",
+        "playerType": "embed",
         "layoutType": "VERTICAL"
     });
 }
@@ -23,9 +24,9 @@ function getHomeSections() {
     // Các hàng hiển thị ở màn hình chính (Trang chủ)
     return JSON.stringify([
         { slug: '', title: 'Mới Cập Nhật', type: 'Horizontal', path: '' }, // slug rỗng để gọi trang chủ
-        { slug: 'category/amateur/', title: 'Video Hàn Quốc', type: 'Horizontal', path: '' },
-        { slug: 'category/onlyfans/', title: 'Video Châu Á (Onlyfans)', type: 'Horizontal', path: '' },
-        { slug: 'category/movies/', title: 'Phim Ngắn', type: 'Horizontal', path: '' }
+        { slug: '2026/03/', title: '03', type: 'Horizontal', path: '' },
+        { slug: 'category/onlyfans/', title: 'Onlyfans', type: 'Horizontal', path: '' },
+        { slug: '?s=Hot+bro', title: 'HotBro', type: 'Horizontal', path: '' }
     ]);
 }
 
@@ -33,8 +34,8 @@ function getPrimaryCategories() {
     // Menu Thể loại ở thanh điều hướng
     return JSON.stringify([
         { name: 'Mới Nhất', slug: '' },
-        { name: 'Hàn Quốc', slug: 'category/amateur/' },
-        { name: 'Châu Á (OF)', slug: 'category/onlyfans/' },
+        { name: 'March', slug: '2026/03/' },
+        { name: 'Onlyfans', slug: 'category/onlyfans/' },
         { name: 'Phim Ngắn', slug: 'category/movies/' },
         { name: 'Hunk Channel', slug: 'category/hunk-channel/' },
         { name: 'Western', slug: 'category/western-gay-porn-hd/' }
