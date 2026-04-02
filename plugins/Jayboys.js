@@ -126,6 +126,10 @@ function parseSearchResponse(html) {
 // PARSER CHI TIẾT VÀ LINK VIDEO (ĐÃ FIX LỖI "KHÔNG TÌM THẤY LINK")
 // =============================================================================
 
+// =============================================================================
+// PARSER CHI TIẾT & GIẢI MÃ LINK VIDEO
+// =============================================================================
+
 function parseMovieDetail(html) {
     var titleMatch = html.match(/<h1 class="title">([^<]+)<\/h1>/);
     var title = titleMatch ? titleMatch[1].trim() : "Unknown Title";
@@ -133,26 +137,22 @@ function parseMovieDetail(html) {
     var imgMatch = html.match(/<meta property="og:image" content="([^"]+)"/);
     var posterUrl = imgMatch ? imgMatch[1] : "";
 
-    // Lấy URL hiện tại của phim để tái sử dụng
-    var currentUrlMatch = html.match(/<meta[^>]+property="og:url"[^>]+content="([^"]+)"/i);
-    var currentUrl = currentUrlMatch ? currentUrlMatch[1] : "";
-
     var servers = [];
     var episodes = [];
     
-    // Tìm tất cả các block player
+    // Tìm tất cả các Embed Server
     var playerRegex = /<div[^>]+id="([^"]+)"[^>]+class="video-player[^"]*"[^>]+data-src="([^"]+)"/g;
     var match;
     var count = 1;
     
     while ((match = playerRegex.exec(html)) !== null) {
-        var playerId = match[1]; // Ví dụ: player1
+        var playerId = match[1]; 
+        var linkEmbed = match[2]; 
 
         episodes.push({
             "id": playerId,
             "name": "Server " + count,
-            // CHIÊU TRÒ Ở ĐÂY: Gắn ID Server vào đuôi URL phim
-            "slug": currentUrl + "#" + playerId
+            "slug": linkEmbed // Trả đúng cái link Embed (VD: https://onecdns.com/...) cho App
         });
         count++;
     }
@@ -178,37 +178,43 @@ function parseMovieDetail(html) {
     });
 }
 
-function parseDetailResponse(html, slug) {
+function parseDetailResponse(html) {
     var url = "";
-    var playerId = "";
-    
-    // 1. Phân tích xem người dùng vừa bấm vào Server nào (Móc ID từ slug)
-    if (typeof slug === "string" && slug.indexOf("#") !== -1) {
-        playerId = slug.split("#")[1];
-    }
 
-    // 2. Tìm đúng cái thẻ div của Server đó để lấy link Embed
-    if (playerId) {
-        var regex = new RegExp('<div[^>]+id="' + playerId + '"[^>]+class="video-player[^"]*"[^>]+data-src="([^"]+)"', 'i');
-        var match = html.match(regex);
-        if (match) {
-            url = match[1];
+    // Bước 1: Thử tìm link m3u8 lộ thiên (Nếu Server hôm đó quên mã hóa)
+    var m3u8Match = html.match(/(https:\/\/[^"']*\.m3u8[^"']*)/i);
+    if (m3u8Match) {
+        url = m3u8Match[1];
+    } 
+    // Bước 2: Kích hoạt "Động cơ Giải mã" để phá lớp bảo vệ eval(function...)
+    else {
+        var packMatch = html.match(/return p\}\('(.*?)',\s*(\d+),\s*(\d+),\s*'([^']+)'\.split\('\|'\)/);
+        if (packMatch) {
+            var p = packMatch[1];
+            var a = parseInt(packMatch[2]);
+            var c = parseInt(packMatch[3]);
+            var k = packMatch[4].split('|');
+
+            // Quá trình giải mã (Unpack)
+            while (c--) {
+                if (k[c]) {
+                    p = p.replace(new RegExp('\\b' + c.toString(a) + '\\b', 'g'), k[c]);
+                }
+            }
+
+            // Sau khi cởi bỏ lớp ngụy trang, tìm lại link m3u8 ẩn giấu bên trong
+            var unpackedM3u8 = p.match(/(https:\/\/[^"']*\.m3u8[^"']*)/i);
+            if (unpackedM3u8) {
+                url = unpackedM3u8[1];
+            }
         }
     }
 
-    // 3. Fallback an toàn: Nếu không tìm thấy ID, cứ lấy đại Server 1
-    if (!url) {
-        var fallbackMatch = html.match(/<div[^>]+class="video-player[^"]*"[^>]+data-src="([^"]+)"/i);
-        if (fallbackMatch) {
-            url = fallbackMatch[1];
-        }
-    }
-
-    // Trả link Embed cho VAAPP tự động xử lý WebView
+    // Trả link siêu VIP cho App chạy trực tiếp
     return JSON.stringify({
         url: url,
         headers: {
-            "Referer": "https://www.javboys.tv/",
+            "Referer": "https://www.javboys.tv/", // Che mắt Server bằng Referer gốc
             "Origin": "https://www.javboys.tv/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         },
