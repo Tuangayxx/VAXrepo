@@ -1,27 +1,24 @@
 // =============================================================================
-// CẤU HÌNH CƠ BẢN (METADATA)
+// PLUGIN JAVBOYS - VAAPP V2 CHUẨN MỚI
 // =============================================================================
+
 function getManifest() {
     return JSON.stringify({
         "id": "javboys",
         "name": "JavBoys",
-        "version": "1.0.0",
+        "version": "2.0.0", // Cập nhật version để App nhận diện bản mới
         "baseUrl": "https://www.javboys.tv",
         "iconUrl": "https://jgcdn.com/wp-content/uploads/2025/09/t4636.webp",
         "isEnabled": true,
         "isAdult": true,
         "type": "VIDEO",
         "playerType": "embed",
-        "layoutType": "VERTICAL"
+        "layoutType": "VERTICAL",
+        "playerType": "exoplayer" // Kích hoạt ExoPlayer siêu mượt vì ta đã bóc được m3u8
     });
 }
 
-// =============================================================================
-// CẤU HÌNH GIAO DIỆN APP
-// =============================================================================
-
 function getHomeSections() {
-    // Các hàng hiển thị ở màn hình chính (Trang chủ)
     return JSON.stringify([
         { slug: '', title: 'Mới Cập Nhật', type: 'Horizontal', path: '' }, // slug rỗng để gọi trang chủ
         { slug: '2026/03/', title: '03', type: 'Horizontal', path: '' },
@@ -31,7 +28,6 @@ function getHomeSections() {
 }
 
 function getPrimaryCategories() {
-    // Menu Thể loại ở thanh điều hướng
     return JSON.stringify([
         { name: 'Mới Nhất', slug: '' },
         { name: 'March', slug: '2026/03/' },
@@ -42,35 +38,35 @@ function getPrimaryCategories() {
     ]);
 }
 
+function getFilterConfig() { return "{}"; }
+
 // =============================================================================
-// KIẾN TẠO LINK LẤY DỮ LIỆU HTML
+// NHÓM 2: KIẾN TẠO LINK LẤY DỮ LIỆU
 // =============================================================================
 
 function getUrlList(slug, filtersJson) {
     var filters = JSON.parse(filtersJson || "{}");
     var page = filters.page || 1;
     var url = "https://www.javboys.tv/" + slug; 
-    
-    // Thêm đuôi /page/2/ nếu người dùng cuộn trang để tải thêm
     if (page > 1) {
         url += "page/" + page + "/";
     }
     return url;
 }
 
-// =============================================================================
-// KIẾN TẠO LINK LẤY DỮ LIỆU HTML
-// =============================================================================
-function getUrlList(slug, filtersJson) {
-    return "https://www.javboys.tv/" + slug; 
-}
-
 function getUrlSearch(keyword, filtersJson) {
-    return "https://www.javboys.tv/?s=" + encodeURIComponent(keyword);
+    var filters = JSON.parse(filtersJson || "{}");
+    var page = filters.page || 1;
+    var url = "https://www.javboys.tv/?s=" + encodeURIComponent(keyword);
+    if (page > 1) {
+        url += "&page=" + page;
+    }
+    return url;
 }
 
 function getUrlDetail(slug) {
-    // Vì mình lấy full URL ở hàm parseListResponse, nên hàm này chỉ cần trả lại đúng slug đó
+    // Trong chuẩn mới, vì ta lưu thẳng Full URL vào ID phim và ID tập phim,
+    // nên App sẽ gọi hàm này và truyền Full URL vào. Ta chỉ việc return chính nó để App fetch.
     return slug; 
 }
 
@@ -79,10 +75,9 @@ function getUrlCountries() { return ""; }
 function getUrlYears() { return ""; }
 
 // =============================================================================
-// PARSER: BÓC TÁCH DỮ LIỆU
+// NHÓM 3: PARSER XỬ LÝ DỮ LIỆU HTML
 // =============================================================================
 
-// 1. Tách Danh sách video ở Trang chủ / Thể loại
 function parseListResponse(html) {
     var items = [];
     var blocks = html.split('<div class="video');
@@ -92,8 +87,9 @@ function parseListResponse(html) {
         
         var linkMatch = block.match(/href="([^"]+)"/);
         if (!linkMatch) continue; 
-        var fullUrl = linkMatch[1];
-        var id = fullUrl; // Lấy full link làm ID để truyền sang getUrlDetail
+        
+        // Lưu Full URL vào ID để getUrlDetail nhận trực tiếp
+        var id = linkMatch[1]; 
         
         var titleMatch = block.match(/<span class="title">([^<]+)<\/span>/) || block.match(/title="([^"]+)"/);
         var title = titleMatch ? titleMatch[1].trim() : "Không có tiêu đề";
@@ -122,15 +118,6 @@ function parseSearchResponse(html) {
     return parseListResponse(html);
 }
 
-// 2. Tách Thông tin Chi tiết và Server (Link Embed)
-// =============================================================================
-// PARSER CHI TIẾT VÀ LINK VIDEO (ĐÃ FIX LỖI "KHÔNG TÌM THẤY LINK")
-// =============================================================================
-
-// =============================================================================
-// PARSER CHI TIẾT & GIẢI MÃ LINK VIDEO
-// =============================================================================
-
 function parseMovieDetail(html) {
     var titleMatch = html.match(/<h1 class="title">([^<]+)<\/h1>/);
     var title = titleMatch ? titleMatch[1].trim() : "Unknown Title";
@@ -141,19 +128,17 @@ function parseMovieDetail(html) {
     var servers = [];
     var episodes = [];
     
-    // Tìm tất cả các Embed Server
     var playerRegex = /<div[^>]+id="([^"]+)"[^>]+class="video-player[^"]*"[^>]+data-src="([^"]+)"/g;
     var match;
     var count = 1;
     
     while ((match = playerRegex.exec(html)) !== null) {
-        var playerId = match[1]; 
-        var linkEmbed = match[2]; 
+        var linkEmbed = match[2]; // Gán trực tiếp link Embed (VD: https://onecdns.com/...)
 
         episodes.push({
-            "id": playerId,
+            "id": linkEmbed, // App sẽ truyền ID này vào getUrlDetail -> Tự động fetch Embed HTML
             "name": "Server " + count,
-            "slug": linkEmbed // Trả đúng cái link Embed (VD: https://onecdns.com/...) cho App
+            "slug": linkEmbed
         });
         count++;
     }
@@ -182,13 +167,13 @@ function parseMovieDetail(html) {
 function parseDetailResponse(html) {
     var url = "";
 
-    // Bước 1: Thử tìm link m3u8 lộ thiên (Nếu Server hôm đó quên mã hóa)
+    // Lúc này 'html' là mã nguồn thô của trang Embed (sau khi App đã tự fetch)
+    // Áp dụng Động Cơ Giải Mã JavaScript Obfuscator
     var m3u8Match = html.match(/(https:\/\/[^"']*\.m3u8[^"']*)/i);
+    
     if (m3u8Match) {
         url = m3u8Match[1];
-    } 
-    // Bước 2: Kích hoạt "Động cơ Giải mã" để phá lớp bảo vệ eval(function...)
-    else {
+    } else {
         var packMatch = html.match(/return p\}\('(.*?)',\s*(\d+),\s*(\d+),\s*'([^']+)'\.split\('\|'\)/);
         if (packMatch) {
             var p = packMatch[1];
@@ -196,14 +181,12 @@ function parseDetailResponse(html) {
             var c = parseInt(packMatch[3]);
             var k = packMatch[4].split('|');
 
-            // Quá trình giải mã (Unpack)
             while (c--) {
                 if (k[c]) {
                     p = p.replace(new RegExp('\\b' + c.toString(a) + '\\b', 'g'), k[c]);
                 }
             }
 
-            // Sau khi cởi bỏ lớp ngụy trang, tìm lại link m3u8 ẩn giấu bên trong
             var unpackedM3u8 = p.match(/(https:\/\/[^"']*\.m3u8[^"']*)/i);
             if (unpackedM3u8) {
                 url = unpackedM3u8[1];
@@ -211,14 +194,20 @@ function parseDetailResponse(html) {
         }
     }
 
-    // Trả link siêu VIP cho App chạy trực tiếp
+    // Trả về JSON chuẩn cấu trúc VAAPP mới
     return JSON.stringify({
         url: url,
+        isEmbed: false, // Báo cho App biết đây là link stream cuối cùng, hãy phát ngay!
+        mimeType: "application/x-mpegURL", // Ép ExoPlayer dùng chuẩn HLS
         headers: {
-            "Referer": "https://www.javboys.tv/", // Che mắt Server bằng Referer gốc
+            "Referer": "https://www.javboys.tv/", 
             "Origin": "https://www.javboys.tv/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         },
         subtitles: []
     });
+}
+
+function parseEmbedResponse(html, sourceUrl) {
+    return JSON.stringify({ url: "", isEmbed: false });
 }
