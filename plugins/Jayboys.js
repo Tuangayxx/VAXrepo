@@ -15,9 +15,47 @@ function getManifest() {
     });
 }
 
-function getHomeSections() { return "[]"; }
-function getPrimaryCategories() { return "[]"; }
-function getFilterConfig() { return "{}"; }
+// =============================================================================
+// CẤU HÌNH GIAO DIỆN APP
+// =============================================================================
+
+function getHomeSections() {
+    // Các hàng hiển thị ở màn hình chính (Trang chủ)
+    return JSON.stringify([
+        { slug: '', title: 'Mới Cập Nhật', type: 'Horizontal', path: '' }, // slug rỗng để gọi trang chủ
+        { slug: 'category/amateur/', title: 'Video Hàn Quốc', type: 'Horizontal', path: '' },
+        { slug: 'category/onlyfans/', title: 'Video Châu Á (Onlyfans)', type: 'Horizontal', path: '' },
+        { slug: 'category/movies/', title: 'Phim Ngắn', type: 'Horizontal', path: '' }
+    ]);
+}
+
+function getPrimaryCategories() {
+    // Menu Thể loại ở thanh điều hướng
+    return JSON.stringify([
+        { name: 'Mới Nhất', slug: '' },
+        { name: 'Hàn Quốc', slug: 'category/amateur/' },
+        { name: 'Châu Á (OF)', slug: 'category/onlyfans/' },
+        { name: 'Phim Ngắn', slug: 'category/movies/' },
+        { name: 'Hunk Channel', slug: 'category/hunk-channel/' },
+        { name: 'Western', slug: 'category/western-gay-porn-hd/' }
+    ]);
+}
+
+// =============================================================================
+// KIẾN TẠO LINK LẤY DỮ LIỆU HTML
+// =============================================================================
+
+function getUrlList(slug, filtersJson) {
+    var filters = JSON.parse(filtersJson || "{}");
+    var page = filters.page || 1;
+    var url = "https://www.javboys.tv/" + slug; 
+    
+    // Thêm đuôi /page/2/ nếu người dùng cuộn trang để tải thêm
+    if (page > 1) {
+        url += "page/" + page + "/";
+    }
+    return url;
+}
 
 // =============================================================================
 // KIẾN TẠO LINK LẤY DỮ LIỆU HTML
