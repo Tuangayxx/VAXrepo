@@ -12,7 +12,7 @@ function getManifest() {
         "isEnabled": true,
         "isAdult": true,
         "type": "MOVIE",
-        "layoutType": "HORIZONTAL"
+        "layoutType": "HORIZONTAL",
         "playerType": "auto"
     });
 }
