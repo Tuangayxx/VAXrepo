@@ -1,9 +1,12 @@
+// =============================================================================
+// JAVBOYS.TV - PLUGIN VAAPP (Phiên bản tối ưu - 2026)
+// =============================================================================
 
 function getManifest() {
     return JSON.stringify({
         "id": "javboys",
         "name": "JavBoys",
-        "version": "1.0.1",
+        "version": "1.0.2",           // Tăng version
         "baseUrl": "https://www.javboys.tv",
         "iconUrl": "https://jgcdn.com/wp-content/uploads/2025/09/t4636.webp",
         "isEnabled": true,
@@ -16,7 +19,7 @@ function getManifest() {
 
 function getHomeSections() {
     return JSON.stringify([
-        { slug: '', title: 'Mới Cập Nhật', type: 'Horizontal', path: '' }, // slug rỗng để gọi trang chủ
+        { slug: '', title: 'Mới Cập Nhật', type: 'Horizontal', path: '' },
         { slug: '2026/03/', title: '03', type: 'Horizontal', path: '' },
         { slug: 'category/onlyfans/', title: 'Onlyfans', type: 'Horizontal', path: '' },
         { slug: '?s=Hot+bro', title: 'HotBro', type: 'Horizontal', path: '' }
@@ -37,15 +40,16 @@ function getPrimaryCategories() {
 function getFilterConfig() { return "{}"; }
 
 // =============================================================================
-// NHÓM 2: KIẾN TẠO LINK LẤY DỮ LIỆU
+// NHÓM 2: KIẾN TẠO LINK
 // =============================================================================
 
 function getUrlList(slug, filtersJson) {
     var filters = JSON.parse(filtersJson || "{}");
     var page = filters.page || 1;
-    var url = "https://www.javboys.tv/" + slug; 
+    var url = "https://www.javboys.tv/" + slug;
+
     if (page > 1) {
-        url += "page/" + page + "/";
+        url += (slug.includes("?") ? "&" : (slug.endsWith("/") ? "" : "/")) + "page/" + page + "/";
     }
     return url;
 }
@@ -61,9 +65,7 @@ function getUrlSearch(keyword, filtersJson) {
 }
 
 function getUrlDetail(slug) {
-    // Trong chuẩn mới, vì ta lưu thẳng Full URL vào ID phim và ID tập phim,
-    // nên App sẽ gọi hàm này và truyền Full URL vào. Ta chỉ việc return chính nó để App fetch.
-    return slug; 
+    return slug; // full URL đã lưu trong ID
 }
 
 function getUrlCategories() { return ""; }
@@ -71,28 +73,33 @@ function getUrlCountries() { return ""; }
 function getUrlYears() { return ""; }
 
 // =============================================================================
-// NHÓM 3: PARSER XỬ LÝ DỮ LIỆU HTML
+// NHÓM 3: PARSER
 // =============================================================================
 
 function parseListResponse(html) {
     var items = [];
-    var blocks = html.split('<div class="video');
-    
-    for (var i = 1; i < blocks.length; i++) {
-        var block = blocks[i];
-        
-        var linkMatch = block.match(/href="([^"]+)"/);
-        if (!linkMatch) continue; 
-        
-        // Lưu Full URL vào ID để getUrlDetail nhận trực tiếp
-        var id = linkMatch[1]; 
-        
-        var titleMatch = block.match(/<span class="title">([^<]+)<\/span>/) || block.match(/title="([^"]+)"/);
+    // Regex mạnh, lấy từng block video
+    var videoRegex = /<div class="video[^>]*>([\s\S]*?)<\/div>/gi;
+    var match;
+
+    while ((match = videoRegex.exec(html)) !== null) {
+        var block = match[1];
+
+        // Link (full URL)
+        var linkMatch = block.match(/href=["']([^"']+)["']/);
+        if (!linkMatch) continue;
+        var id = linkMatch[1];
+
+        // Title
+        var titleMatch = block.match(/<span class="title">([^<]+)<\/span>/) ||
+                         block.match(/title=["']([^"']+)["']/);
         var title = titleMatch ? titleMatch[1].trim() : "Không có tiêu đề";
 
-        var imgMatch = block.match(/<img[^>]+src="([^"]+)"/i);
+        // Poster
+        var imgMatch = block.match(/<img[^>]+src=["']([^"']+)["']/i);
         var posterUrl = imgMatch ? imgMatch[1] : "";
 
+        // Quality / Time
         var timeMatch = block.match(/<span class="time-desc">([^<]+)<\/span>/i);
         var quality = timeMatch ? timeMatch[1].trim() : "";
 
@@ -100,13 +107,46 @@ function parseListResponse(html) {
             id: id,
             title: title,
             posterUrl: posterUrl,
-            quality: quality 
+            quality: quality
         });
+    }
+
+    // ====================== PAGINATION ======================
+    var pagination = { currentPage: 1, totalPages: 1 };
+
+    // Cách 1: Lấy số trang cuối cùng
+    var lastPageMatch = html.match(/page\/(\d+)\/"[^>]*>(?:Last|Cuối)/i) ||
+                        html.match(/class=["']page-numbers["'][^>]*>(\d+)[^<]*<\/a>/g);
+
+    if (lastPageMatch) {
+        if (Array.isArray(lastPageMatch)) {
+            var max = 1;
+            lastPageMatch.forEach(function(numStr) {
+                var num = parseInt(numStr.match(/\d+/)[0]);
+                if (num > max) max = num;
+            });
+            pagination.totalPages = max;
+        } else {
+            pagination.totalPages = parseInt(lastPageMatch[1]);
+        }
+    }
+
+    // Cách 2: fallback - lấy tất cả số trang
+    if (pagination.totalPages === 1) {
+        var allPages = html.match(/class=["']page-numbers["'][^>]*>(\d+)/g);
+        if (allPages) {
+            var maxPage = 1;
+            allPages.forEach(function(p) {
+                var n = parseInt(p.match(/\d+/)[0]);
+                if (n > maxPage) maxPage = n;
+            });
+            pagination.totalPages = maxPage;
+        }
     }
 
     return JSON.stringify({
         items: items,
-        pagination: { currentPage: 1, totalPages: 1 } 
+        pagination: pagination
     });
 }
 
@@ -123,31 +163,30 @@ function parseMovieDetail(html) {
 
     var servers = [];
     var episodes = [];
-    
-    var playerRegex = /<div[^>]+id="([^"]+)"[^>]+class="video-player[^"]*"[^>]+data-src="([^"]+)"/g;
-    var match;
     var count = 1;
-    
-    while ((match = playerRegex.exec(html)) !== null) {
-        var linkEmbed = match[2]; // Gán trực tiếp link Embed (VD: https://onecdns.com/...)
 
+    // Regex linh hoạt hơn cho player
+    var playerRegex = /data-src=["']([^"']+)["'][^>]*class=["'][^"']*video-player/gi;
+    var match;
+
+    while ((match = playerRegex.exec(html)) !== null) {
+        var linkEmbed = match[1];
         episodes.push({
-            "id": linkEmbed, // App sẽ truyền ID này vào getUrlDetail -> Tự động fetch Embed HTML
-            "name": "Server " + count,
-            "slug": linkEmbed
+            id: linkEmbed,
+            name: "Server " + count++,
+            slug: linkEmbed
         });
-        count++;
     }
 
     if (episodes.length > 0) {
         servers.push({
-            "name": "Nguồn Phát",
-            "episodes": episodes
+            name: "Nguồn Phát",
+            episodes: episodes
         });
     }
 
     return JSON.stringify({
-        id: "", 
+        id: "",
         title: title,
         posterUrl: posterUrl,
         backdropUrl: posterUrl,
@@ -163,40 +202,43 @@ function parseMovieDetail(html) {
 function parseDetailResponse(html) {
     var url = "";
 
-    // Lúc này 'html' là mã nguồn thô của trang Embed (sau khi App đã tự fetch)
-    // Áp dụng Động Cơ Giải Mã JavaScript Obfuscator
-    var m3u8Match = html.match(/(https:\/\/[^"']*\.m3u8[^"']*)/i);
-    
-    if (m3u8Match) {
-        url = m3u8Match[1];
-    } else {
-        var packMatch = html.match(/return p\}\('(.*?)',\s*(\d+),\s*(\d+),\s*'([^']+)'\.split\('\|'\)/);
-        if (packMatch) {
-            var p = packMatch[1];
-            var a = parseInt(packMatch[2]);
-            var c = parseInt(packMatch[3]);
-            var k = packMatch[4].split('|');
+    try {
+        // 1. Tìm m3u8 trực tiếp
+        var m3u8Match = html.match(/(https:\/\/[^"'\s>]+?\.m3u8(?:\?[^"'\s>]*)?)/i);
+        if (m3u8Match) {
+            url = m3u8Match[1];
+        } 
+        // 2. Giải mã packer (nếu có)
+        else {
+            var packMatch = html.match(/return p\}\('(.*?)',\s*(\d+),\s*(\d+),\s*'([^']+)'\.split\('\|'\)/);
+            if (packMatch) {
+                var p = packMatch[1];
+                var a = parseInt(packMatch[2]);
+                var c = parseInt(packMatch[3]);
+                var k = packMatch[4].split('|');
 
-            while (c--) {
-                if (k[c]) {
-                    p = p.replace(new RegExp('\\b' + c.toString(a) + '\\b', 'g'), k[c]);
+                while (c--) {
+                    if (k[c]) {
+                        p = p.replace(new RegExp('\\b' + c.toString(a) + '\\b', 'g'), k[c]);
+                    }
+                }
+
+                var unpackedM3u8 = p.match(/(https:\/\/[^"'\s>]+?\.m3u8(?:\?[^"'\s>]*)?)/i);
+                if (unpackedM3u8) {
+                    url = unpackedM3u8[1];
                 }
             }
-
-            var unpackedM3u8 = p.match(/(https:\/\/[^"']*\.m3u8[^"']*)/i);
-            if (unpackedM3u8) {
-                url = unpackedM3u8[1];
-            }
         }
+    } catch (e) {
+        // Bỏ qua lỗi unpack, vẫn trả về rỗng
     }
 
-    // Trả về JSON chuẩn cấu trúc VAAPP mới
     return JSON.stringify({
         url: url,
-        isEmbed: false, // Báo cho App biết đây là link stream cuối cùng, hãy phát ngay!
-        mimeType: "application/x-mpegURL", // Ép ExoPlayer dùng chuẩn HLS
+        isEmbed: false,
+        mimeType: "application/x-mpegURL",
         headers: {
-            "Referer": "https://www.javboys.tv/", 
+            "Referer": "https://www.javboys.tv/",
             "Origin": "https://www.javboys.tv/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         },
