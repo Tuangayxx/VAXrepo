@@ -2,7 +2,7 @@ function getManifest() {
     return JSON.stringify({
         "id": "javboys",
         "name": "JavBoys",
-        "version": "1.0.2", // Nâng version
+        "version": "1.0.1",
         "baseUrl": "https://www.javboys.tv",
         "iconUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/main/plugins/jayboys_icon.webp",
         "isEnabled": true,
