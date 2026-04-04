@@ -5,7 +5,7 @@
             "id": "javboys",
             "name": "JavBoys",
             "version": "1.0.0",
-            "scriptUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/refs/heads/main/plugins/Jayboys.js",
+            "scriptUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/main/plugins/Jayboys.js",
             "iconUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/refs/heads/main/plugins/jayboys_icon.webp"
         }
     ]
