@@ -77,20 +77,21 @@ function parseListResponse(html) {
     
     for (var i = 1; i < blocks.length; i++) {
         var block = blocks[i];
-        
         if (block.indexOf('class="thumb-video"') === -1) continue;
 
         var linkMatch = block.match(/<a class="thumb-video"[^>]+href="([^"]+)"/i);
         if (!linkMatch) continue; 
         
         var fullUrl = linkMatch[1]; 
+        // Cắt tạo ID sạch
         var id = fullUrl.replace(/https?:\/\/(www\.)?javboys\.tv\//i, "");
         if (id.endsWith('/')) { id = id.slice(0, -1); }
         
         var titleMatch = block.match(/<span class="title">([^<]+)<\/span>/i) || block.match(/title="([^"]+)"/i);
         var title = titleMatch ? titleMatch[1].trim() : "Không có tiêu đề";
 
-        var imgMatch = block.match(/<img[^>]+src="([^"]+)"/i);
+        // ĐÃ FIX: Bắt ảnh thông minh chống LazyLoad (Tránh lỗi ảnh đen/trống ở màn hình Home)
+        var imgMatch = block.match(/data-src="([^"]+)"/i) || block.match(/data-lazy-src="([^"]+)"/i) || block.match(/<img[^>]+src="([^"]+)"/i);
         var posterUrl = imgMatch ? imgMatch[1] : "";
 
         var timeMatch = block.match(/<span class="time-desc">([^<]+)<\/span>/i);
