@@ -1,12 +1,9 @@
-// =============================================================================
-// JAVBOYS.TV - PLUGIN VAAPP (Phiên bản tối ưu - 2026)
-// =============================================================================
 
 function getManifest() {
     return JSON.stringify({
         "id": "javboys",
         "name": "JavBoys",
-        "version": "1.0.1",           // Tăng version
+        "version": "1.0.1",
         "baseUrl": "https://www.javboys.tv",
         "iconUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/main/plugins/jayboys_icon.webp",
         "isEnabled": true,
