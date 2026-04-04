@@ -4,7 +4,7 @@ function getManifest() {
         "name": "JavBoys",
         "version": "3.0.0", // Nâng version để App quét mới
         "baseUrl": "https://www.javboys.tv",
-        "iconUrl": "https://jgcdn.com/wp-content/uploads/2025/09/t4636.webp",
+        "iconUrl": "https://github.com/Tuangayxx/VAXrepo/blob/44b54fa572e2f900c2519c85214a5deb641b6ce6/plugins/jayboys_icon.webp",
         "isEnabled": true,
         "isAdult": true,
         "type": "MOVIE",
