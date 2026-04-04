@@ -4,7 +4,7 @@ function getManifest() {
         "name": "JavBoys",
         "version": "1.0.1",
         "baseUrl": "https://www.javboys.tv",
-        "iconUrl": "https://github.com/Tuangayxx/VAXrepo/main/plugins/jayboys_icon.webp",
+        "iconUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/refs/heads/main/plugins/jayboys_icon.webp",
         "isEnabled": true,
         "isAdult": true,
         "type": "MOVIE",
