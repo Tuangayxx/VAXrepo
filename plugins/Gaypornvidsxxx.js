@@ -6,14 +6,14 @@ function getManifest() {
     return JSON.stringify({
         "id": "gaypornvidsxxx",
         "name": "GayPornVidsXXX",
-        "version": "2.0.0",
+        "version": "1.0.1",
         "baseUrl": "https://www.gaypornvidsxxx.com",
         "iconUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/main/plugins/gpvx.png", 
         "isEnabled": true,
         "isAdult": true,
         "type": "MOVIE",
         "playerType": "auto",
-        "layoutType": "VERTICAL"
+        "layoutType": "HORIZONTAL"
     });
 }
 
