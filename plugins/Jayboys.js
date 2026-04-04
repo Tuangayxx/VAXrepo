@@ -35,7 +35,9 @@ function getPrimaryCategories() {
     ]);
 }
 
-function getFilterConfig() { return "{}"; }
+function getFilterConfig() {
+    return JSON.stringify({});
+}
 
 function getUrlList(slug, filtersJson) {
     var filters = JSON.parse(filtersJson || "{}");
