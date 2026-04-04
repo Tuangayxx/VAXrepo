@@ -1,16 +1,19 @@
+// =============================================================================
+// PLUGIN JAVBOYS - VAAPP (BẢN V3 HOÀN THIỆN)
+// =============================================================================
 
 function getManifest() {
     return JSON.stringify({
         "id": "javboys",
         "name": "JavBoys",
-        "version": "1.0.1",
+        "version": "3.0.0", // Nâng version để App quét mới
         "baseUrl": "https://www.javboys.tv",
-        "iconUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/refs/heads/main/plugins/jayboys_icon.webp",
+        "iconUrl": "https://jgcdn.com/wp-content/uploads/2025/09/t4636.webp",
         "isEnabled": true,
         "isAdult": true,
         "type": "MOVIE",
-        "playerType": "exoplayer",
-        "layoutType": "HORIZONTAL"
+        "layoutType": "VERTICAL",
+        "playerType": "exoplayer" 
     });
 }
 
@@ -36,32 +39,27 @@ function getPrimaryCategories() {
 
 function getFilterConfig() { return "{}"; }
 
-// =============================================================================
-// NHÓM 2: KIẾN TẠO LINK LẤY DỮ LIỆU
-// =============================================================================
-
 function getUrlList(slug, filtersJson) {
     var filters = JSON.parse(filtersJson || "{}");
     var page = filters.page || 1;
     var url = "https://www.javboys.tv/" + slug; 
-    if (page > 1) {
-        url += "page/" + page + "/";
-    }
+    if (page > 1) { url += "page/" + page + "/"; }
     return url;
 }
 
 function getUrlSearch(keyword, filtersJson) {
-    var filters = JSON.parse(filtersJson || "{}");
-    var page = filters.page || 1;
+    var page = JSON.parse(filtersJson || "{}").page || 1;
     var url = "https://www.javboys.tv/?s=" + encodeURIComponent(keyword);
-    if (page > 1) {
-        url += "&page=" + page;
-    }
+    if (page > 1) { url += "&page=" + page; }
     return url;
 }
 
 function getUrlDetail(slug) {
-    return "https://www.javboys.tv/" + slug + "/";
+    // Ép cứng domain chống lỗi thiếu link
+    if (slug.indexOf("http") === -1) {
+        return "https://www.javboys.tv/" + slug + "/";
+    }
+    return slug; 
 }
 
 function getUrlCategories() { return ""; }
@@ -69,31 +67,32 @@ function getUrlCountries() { return ""; }
 function getUrlYears() { return ""; }
 
 // =============================================================================
-// NHÓM 3: PARSER XỬ LÝ DỮ LIỆU HTML
+// PARSER XỬ LÝ DỮ LIỆU HTML
 // =============================================================================
 
 function parseListResponse(html) {
     var items = [];
-    var blocks = html.split('<div class="video');
+    // Đã Fix: Cắt đúng vùng chứa Video, loại bỏ vùng chứa tag/category gây lỗi hiển thị
+    var blocks = html.split('<div class="thumb-view">');
     
     for (var i = 1; i < blocks.length; i++) {
         var block = blocks[i];
         
-        var linkMatch = block.match(/href="([^"]+)"/);
+        // Bỏ qua nếu không phải khối video
+        if (block.indexOf('class="thumb-video"') === -1) continue;
+
+        var linkMatch = block.match(/<a class="thumb-video"[^>]+href="([^"]+)"/i);
         if (!linkMatch) continue; 
-        var fullUrl = linkMatch[1];
         
-        // CỰC KỲ QUAN TRỌNG: Cắt bỏ domain để tạo ra ID/slug sạch cho App
+        // Lấy ID sạch sẽ
+        var fullUrl = linkMatch[1]; 
         var id = fullUrl.replace(/https?:\/\/(www\.)?javboys\.tv\//i, "");
-        if (id.endsWith('/')) {
-            id = id.slice(0, -1);
-        }
+        if (id.endsWith('/')) { id = id.slice(0, -1); }
         
-        var titleMatch = block.match(/<span class="title">([^<]+)<\/span>/) || block.match(/title="([^"]+)"/);
+        var titleMatch = block.match(/<span class="title">([^<]+)<\/span>/i) || block.match(/title="([^"]+)"/i);
         var title = titleMatch ? titleMatch[1].trim() : "Không có tiêu đề";
 
-        // BẮT ẢNH THÔNG MINH: Ưu tiên data-src để xuyên thủng LazyLoad của Web
-        var imgMatch = block.match(/data-src="([^"]+)"/i) || block.match(/data-lazy-src="([^"]+)"/i) || block.match(/<img[^>]+src="([^"]+)"/i);
+        var imgMatch = block.match(/<img[^>]+src="([^"]+)"/i);
         var posterUrl = imgMatch ? imgMatch[1] : "";
 
         var timeMatch = block.match(/<span class="time-desc">([^<]+)<\/span>/i);
@@ -125,28 +124,24 @@ function parseMovieDetail(html) {
     var posterUrl = imgMatch ? imgMatch[1] : "";
 
     var servers = [];
-    var episodes = [];
-    
     var playerRegex = /<div[^>]+id="([^"]+)"[^>]+class="video-player[^"]*"[^>]+data-src="([^"]+)"/g;
     var match;
     var count = 1;
     
     while ((match = playerRegex.exec(html)) !== null) {
-        var linkEmbed = match[2]; // Gán trực tiếp link Embed (VD: https://onecdns.com/...)
+        var linkEmbed = match[2]; 
 
-        episodes.push({
-            "id": linkEmbed, // App sẽ truyền ID này vào getUrlDetail -> Tự động fetch Embed HTML
+        servers.push({
             "name": "Server " + count,
-            "slug": linkEmbed
+            "episodes": [
+                {
+                    "id": linkEmbed, 
+                    "name": "Full",  // Đã Fix: Thêm tên "Full" để tránh lỗi null
+                    "slug": linkEmbed
+                }
+            ]
         });
         count++;
-    }
-
-    if (episodes.length > 0) {
-        servers.push({
-            "name": "Nguồn Phát",
-            "episodes": episodes
-        });
     }
 
     return JSON.stringify({
@@ -166,14 +161,13 @@ function parseMovieDetail(html) {
 function parseDetailResponse(html) {
     var url = "";
 
-    // Lúc này 'html' là mã nguồn thô của trang Embed (sau khi App đã tự fetch)
-    // Áp dụng Động Cơ Giải Mã JavaScript Obfuscator
-    var m3u8Match = html.match(/(https:\/\/[^"']*\.m3u8[^"']*)/i);
-    
+    // 1. Thử tìm link m3u8 thuần
+    var m3u8Match = html.match(/(https?:\/\/[^"']*\.m3u8[^"']*)/i);
     if (m3u8Match) {
         url = m3u8Match[1];
     } else {
-        var packMatch = html.match(/return p\}\('(.*?)',\s*(\d+),\s*(\d+),\s*'([^']+)'\.split\('\|'\)/);
+        // 2. Đã Fix: Nâng cấp Regex để đọc mọi định dạng của JS Obfuscator
+        var packMatch = html.match(/return p\}\('([\s\S]*?)',\s*(\d+),\s*(\d+),\s*'([^']+)'\.split\('\|'\)/);
         if (packMatch) {
             var p = packMatch[1];
             var a = parseInt(packMatch[2]);
@@ -186,21 +180,21 @@ function parseDetailResponse(html) {
                 }
             }
 
-            var unpackedM3u8 = p.match(/(https:\/\/[^"']*\.m3u8[^"']*)/i);
+            // Quét lại URL sau khi đã unpack, hỗ trợ cả trường hợp bị escape (\/)
+            var unpackedM3u8 = p.match(/(https?:\/\/[^"']*\.m3u8[^"']*)/i) || p.match(/(https?:\\\/\\\/[^"']*\.m3u8[^"']*)/i);
             if (unpackedM3u8) {
-                url = unpackedM3u8[1];
+                // Xóa bỏ các dấu \ nếu server có mã hóa
+                url = unpackedM3u8[1].replace(/\\\//g, '/');
             }
         }
     }
 
-    // Trả về JSON chuẩn cấu trúc VAAPP mới
     return JSON.stringify({
         url: url,
-        isEmbed: false, // Báo cho App biết đây là link stream cuối cùng, hãy phát ngay!
-        mimeType: "application/x-mpegURL", // Ép ExoPlayer dùng chuẩn HLS
+        isEmbed: false, 
+        mimeType: "application/x-mpegURL", 
         headers: {
             "Referer": "https://www.javboys.tv/", 
-            "Origin": "https://www.javboys.tv/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         },
         subtitles: []
