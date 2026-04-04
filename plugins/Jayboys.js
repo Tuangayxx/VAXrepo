@@ -1,20 +1,16 @@
-// =============================================================================
-// PLUGIN JAVBOYS - VAAPP V2 CHUẨN MỚI
-// =============================================================================
 
 function getManifest() {
     return JSON.stringify({
         "id": "javboys",
         "name": "JavBoys",
-        "version": "2.0.0", // Cập nhật version để App nhận diện bản mới
+        "version": "1.0.1",
         "baseUrl": "https://www.javboys.tv",
         "iconUrl": "https://jgcdn.com/wp-content/uploads/2025/09/t4636.webp",
         "isEnabled": true,
         "isAdult": true,
         "type": "MOVIE",
-        "playerType": "embed",
-        "layoutType": "VERTICAL",
-        "playerType": "exoplayer" // Kích hoạt ExoPlayer siêu mượt vì ta đã bóc được m3u8
+        "playerType": "exoplayer",
+        "layoutType": "HORIZONTAL"
     });
 }
 
