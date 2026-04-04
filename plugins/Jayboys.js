@@ -2,9 +2,9 @@ function getManifest() {
     return JSON.stringify({
         "id": "javboys",
         "name": "JavBoys",
-        "version": "1.0.1",
+        "version": "1.0.2", // Nâng version
         "baseUrl": "https://www.javboys.tv",
-        "iconUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/refs/heads/main/plugins/jayboys_icon.webp",
+        "iconUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/main/plugins/jayboys_icon.webp",
         "isEnabled": true,
         "isAdult": true,
         "type": "MOVIE",
@@ -15,7 +15,7 @@ function getManifest() {
 
 function getHomeSections() {
     return JSON.stringify([
-        { slug: '', title: 'Mới Cập Nhật', type: 'Horizontal', path: '' }, // slug rỗng để gọi trang chủ
+        { slug: '', title: 'Mới Cập Nhật', type: 'Horizontal', path: '' }, 
         { slug: '2026/03/', title: '03', type: 'Horizontal', path: '' },
         { slug: 'category/onlyfans/', title: 'Onlyfans', type: 'Horizontal', path: '' },
         { slug: '?s=Hot+bro', title: 'HotBro', type: 'Horizontal', path: '' }
@@ -37,7 +37,15 @@ function getUrlList(slug, filtersJson) {
     var filters = JSON.parse(filtersJson || "{}");
     var page = filters.page || 1;
     var url = "https://www.javboys.tv/" + slug; 
-    if (page > 1) { url += "page/" + page + "/"; }
+    
+    // Đã Fix: Xử lý đúng URL phân trang nếu slug là câu lệnh tìm kiếm (?s=...)
+    if (page > 1) { 
+        if (slug.indexOf("?") !== -1) {
+            url += "&page=" + page;
+        } else {
+            url += "page/" + page + "/"; 
+        }
+    }
     return url;
 }
 
@@ -49,7 +57,6 @@ function getUrlSearch(keyword, filtersJson) {
 }
 
 function getUrlDetail(slug) {
-    // Ép cứng domain chống lỗi thiếu link
     if (slug.indexOf("http") === -1) {
         return "https://www.javboys.tv/" + slug + "/";
     }
@@ -66,19 +73,16 @@ function getUrlYears() { return ""; }
 
 function parseListResponse(html) {
     var items = [];
-    // Đã Fix: Cắt đúng vùng chứa Video, loại bỏ vùng chứa tag/category gây lỗi hiển thị
     var blocks = html.split('<div class="thumb-view">');
     
     for (var i = 1; i < blocks.length; i++) {
         var block = blocks[i];
         
-        // Bỏ qua nếu không phải khối video
         if (block.indexOf('class="thumb-video"') === -1) continue;
 
         var linkMatch = block.match(/<a class="thumb-video"[^>]+href="([^"]+)"/i);
         if (!linkMatch) continue; 
         
-        // Lấy ID sạch sẽ
         var fullUrl = linkMatch[1]; 
         var id = fullUrl.replace(/https?:\/\/(www\.)?javboys\.tv\//i, "");
         if (id.endsWith('/')) { id = id.slice(0, -1); }
@@ -130,7 +134,7 @@ function parseMovieDetail(html) {
             "episodes": [
                 {
                     "id": linkEmbed, 
-                    "name": "Full",  // Đã Fix: Thêm tên "Full" để tránh lỗi null
+                    "name": "Full",
                     "slug": linkEmbed
                 }
             ]
@@ -155,12 +159,10 @@ function parseMovieDetail(html) {
 function parseDetailResponse(html) {
     var url = "";
 
-    // 1. Thử tìm link m3u8 thuần
     var m3u8Match = html.match(/(https?:\/\/[^"']*\.m3u8[^"']*)/i);
     if (m3u8Match) {
         url = m3u8Match[1];
     } else {
-        // 2. Đã Fix: Nâng cấp Regex để đọc mọi định dạng của JS Obfuscator
         var packMatch = html.match(/return p\}\('([\s\S]*?)',\s*(\d+),\s*(\d+),\s*'([^']+)'\.split\('\|'\)/);
         if (packMatch) {
             var p = packMatch[1];
@@ -174,10 +176,8 @@ function parseDetailResponse(html) {
                 }
             }
 
-            // Quét lại URL sau khi đã unpack, hỗ trợ cả trường hợp bị escape (\/)
             var unpackedM3u8 = p.match(/(https?:\/\/[^"']*\.m3u8[^"']*)/i) || p.match(/(https?:\\\/\\\/[^"']*\.m3u8[^"']*)/i);
             if (unpackedM3u8) {
-                // Xóa bỏ các dấu \ nếu server có mã hóa
                 url = unpackedM3u8[1].replace(/\\\//g, '/');
             }
         }
