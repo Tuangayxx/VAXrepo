@@ -8,7 +8,7 @@ function getManifest() {
         "name": "JavBoys",
         "version": "1.0.1",           // Tăng version
         "baseUrl": "https://www.javboys.tv",
-        "iconUrl": "https://jgcdn.com/wp-content/uploads/2025/09/t4636.webp",
+        "iconUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/main/plugins/jayboys_icon.webp",
         "isEnabled": true,
         "isAdult": true,
         "type": "MOVIE",
