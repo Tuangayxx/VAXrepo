@@ -12,8 +12,8 @@ function getManifest() {
         "isEnabled": true,
         "isAdult": true,
         "type": "MOVIE",
-        "playerType": "exoplayer",
         "layoutType": "HORIZONTAL"
+        "playerType": "auto"
     });
 }
 
