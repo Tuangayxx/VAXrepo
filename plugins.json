@@ -7,6 +7,13 @@
             "version": "1.0.1",
             "scriptUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/main/plugins/Jayboys.js",
             "iconUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/main/plugins/jayboys_icon.webp"
+        },
+        {
+            "id": "kkphim",
+            "name": "KKPhim",
+            "version": "1.0.1",
+            "scriptUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/main/plugins/kkphim_plugin.js",
+            "iconUrl": "https://raw.githubusercontent.com/Tuangayxx/VAXrepo/main/plugins/kkphim.png"
         }
     ]
 }
