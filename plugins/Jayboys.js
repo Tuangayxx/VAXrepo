@@ -2,14 +2,14 @@ function getManifest() {
     return JSON.stringify({
         "id": "javboys",
         "name": "JavBoys",
-        "version": "3.0.0", // Nâng version để App quét mới
+        "version": "1.0.1",
         "baseUrl": "https://www.javboys.tv",
-        "iconUrl": "https://github.com/Tuangayxx/VAXrepo/blob/44b54fa572e2f900c2519c85214a5deb641b6ce6/plugins/jayboys_icon.webp",
+        "iconUrl": "https://github.com/Tuangayxx/VAXrepo/main/plugins/jayboys_icon.webp",
         "isEnabled": true,
         "isAdult": true,
         "type": "MOVIE",
-        "layoutType": "VERTICAL",
-        "playerType": "exoplayer" 
+        "playerType": "exoplayer",
+        "layoutType": "HORIZONTAL"
     });
 }
 
@@ -27,9 +27,7 @@ function getPrimaryCategories() {
         { name: 'Mới Nhất', slug: '' },
         { name: 'March', slug: '2026/03/' },
         { name: 'Onlyfans', slug: 'category/onlyfans/' },
-        { name: 'Phim Ngắn', slug: 'category/movies/' },
-        { name: 'Hunk Channel', slug: 'category/hunk-channel/' },
-        { name: 'Western', slug: 'category/western-gay-porn-hd/' }
+        { name: 'HotBro', slug: '?s=Hot+bro' }
     ]);
 }
 
