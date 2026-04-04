@@ -6,7 +6,7 @@ function getManifest() {
     return JSON.stringify({
         "id": "javboys",
         "name": "JavBoys",
-        "version": "1.0.2",           // Tăng version
+        "version": "1.0.1",           // Tăng version
         "baseUrl": "https://www.javboys.tv",
         "iconUrl": "https://jgcdn.com/wp-content/uploads/2025/09/t4636.webp",
         "isEnabled": true,
